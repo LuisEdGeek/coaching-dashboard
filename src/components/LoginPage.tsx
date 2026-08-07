@@ -32,12 +32,7 @@ export function LoginPage({ onSuccess }: Props) {
     <div className="login-shell">
       <div className="login-bg" aria-hidden />
       <form className="login-panel" onSubmit={onSubmit}>
-        <p className="brand-mark">Deliberate Coaching</p>
-        <h1>Beta ops dashboard</h1>
-        <p className="login-lead">
-          Real metrics from <code>coaching-app-back</code>. Sign in with an admin
-          account (<code>profile.isAdmin = true</code>).
-        </p>
+        <h1>Deliberate KPIs</h1>
         {!apiBaseConfigured() ? (
           <p className="form-error">Missing VITE_API_BASE_URL in .env</p>
         ) : null}

@@ -60,8 +60,7 @@ export function DashboardPage({ onLogout }: Props) {
       <div className="page-atmosphere" aria-hidden />
       <header className="dash-top">
         <div>
-          <p className="brand-mark">Deliberate Coaching</p>
-          <h1>P0 Beta scorecard</h1>
+          <h1>Deliberate KPIs</h1>
           <p className="dash-sub">
             {snap?.rangeLabel ?? "Loading…"}
             {" · live API"}
