@@ -10,12 +10,11 @@ export type MetricCategory =
   | "Value Perception"
   | "User Feedback";
 
-/** How ready the backend/app is to feed this metric. */
 export type DataStatus =
-  | "live" // can be wired to an admin API today
-  | "sql_ready" // tables/logs exist; need aggregate endpoint
-  | "partial" // signal exists but incomplete
-  | "blocked"; // needs new instrumentation
+  | "live"
+  | "sql_ready"
+  | "partial"
+  | "blocked";
 
 export type MetricKind = "quantitative" | "qualitative" | "mixed";
 
@@ -29,22 +28,21 @@ export type MetricDefinition = {
   formula: string;
   source: string;
   status: DataStatus;
-  /** What is missing before this is trustworthy in prod. */
   gap?: string;
 };
 
 export type MetricValue = {
   id: string;
-  /** Display value, e.g. "2.4%", "1.2s", "—" */
   display: string;
-  /** Optional sparkline-ish trend label */
   delta?: string;
-  /** true = bad direction for critical metrics */
   alert?: boolean;
+  available?: boolean;
 };
 
 export type MetricsSnapshot = {
   asOf: string;
   rangeLabel: string;
+  from?: string;
+  to?: string;
   values: Record<string, MetricValue>;
 };

@@ -1,34 +1,20 @@
 # Deliberate Coaching — Beta Ops Dashboard
 
-Frontend for **P0 / Beta** product metrics (AI quality, stability, activation, journeys, engagement, UX, value).
-
-Repo: [`LuisEdGeek/coaching-dashboard`](https://github.com/LuisEdGeek/coaching-dashboard)
+Frontend for **P0 / Beta** product metrics. **No fixtures** — data comes from
+`GET /admin/metrics/overview` on `coaching-app-back`.
 
 ## Run
 
 ```bash
 cp .env.example .env
+# set VITE_API_BASE_URL to your API
 npm install
 npm run dev
 ```
 
-Default: **fixture mode** (`VITE_USE_FIXTURES=true`). Sign in with any non-empty password.
+Sign in with a user whose `profile.isAdmin = true`.
 
-## Wire to API later
+## API
 
-When `coaching-app-back` exposes admin metrics:
-
-```env
-VITE_API_BASE_URL=https://backendcoach.geekvillage.com.mx
-VITE_USE_FIXTURES=false
-```
-
-Expected contract (not implemented yet): `GET /admin/metrics/overview` → `MetricsSnapshot` (see `src/metrics/types.ts`).
-
-## What this UI does
-
-- Lists every **P0 Beta** metric from the product scorecard
-- Shows priority, question, formula source, and **instrumentation status**
-- Groups gaps: **Blocked / Partial / SQL ready**
-
-Post-Beta and Scale metrics are intentionally out of scope.
+- `POST /login-registro/login` → session token
+- `GET /admin/metrics/overview?days=7` (Bearer + admin)

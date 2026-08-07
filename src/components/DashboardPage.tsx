@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CategorySection } from "./CategorySection";
 import { GapsPanel } from "./GapsPanel";
 import { CATEGORY_ORDER, P0_METRICS } from "../metrics/catalog";
-import { fetchMetricsSnapshot, isFixtureMode, logoutAdmin } from "../metrics/api";
+import { clearSession, fetchMetricsSnapshot, getStoredToken } from "../metrics/api";
 import type { MetricsSnapshot } from "../metrics/types";
 
 type Props = {
@@ -16,17 +16,20 @@ export function DashboardPage({ onLogout }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchMetricsSnapshot()
+    fetchMetricsSnapshot(7)
       .then((s) => {
         if (!cancelled) setSnap(s);
       })
       .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to load");
+          if (!getStoredToken()) onLogout();
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [onLogout]);
 
   const visible = useMemo(() => {
     if (filter === "all") return P0_METRICS;
@@ -48,7 +51,7 @@ export function DashboardPage({ onLogout }: Props) {
   }, [snap]);
 
   function handleLogout() {
-    logoutAdmin();
+    clearSession();
     onLogout();
   }
 
@@ -61,7 +64,7 @@ export function DashboardPage({ onLogout }: Props) {
           <h1>P0 Beta scorecard</h1>
           <p className="dash-sub">
             {snap?.rangeLabel ?? "Loading…"}
-            {isFixtureMode() ? " · fixture data" : " · live API"}
+            {" · live API"}
             {criticalAlerts > 0 ? ` · ${criticalAlerts} critical alerts` : ""}
           </p>
         </div>

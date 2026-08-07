@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { DashboardPage } from "./components/DashboardPage";
 import { LoginPage } from "./components/LoginPage";
-import { isDemoLoggedIn, isFixtureMode } from "./metrics/api";
+import { getStoredToken } from "./metrics/api";
 import "./styles.css";
 
 export default function App() {
-  const [authed, setAuthed] = useState(() => isFixtureMode() && isDemoLoggedIn());
+  const [authed, setAuthed] = useState(() => Boolean(getStoredToken()));
 
   if (!authed) {
     return <LoginPage onSuccess={() => setAuthed(true)} />;

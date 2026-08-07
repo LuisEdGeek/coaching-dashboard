@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { loginAdmin } from "../metrics/api";
+import { apiBaseConfigured, loginAdmin } from "../metrics/api";
 
 type Props = {
   onSuccess: () => void;
@@ -16,6 +16,9 @@ export function LoginPage({ onSuccess }: Props) {
     setBusy(true);
     setError(null);
     try {
+      if (!apiBaseConfigured()) {
+        throw new Error("Set VITE_API_BASE_URL in .env to your coaching-app-back URL");
+      }
       await loginAdmin(email, password);
       onSuccess();
     } catch (err) {
@@ -32,9 +35,12 @@ export function LoginPage({ onSuccess }: Props) {
         <p className="brand-mark">Deliberate Coaching</p>
         <h1>Beta ops dashboard</h1>
         <p className="login-lead">
-          P0 metrics for AI quality, stability, activation, and journey health.
-          Fixture mode works without the API — any non-empty password.
+          Real metrics from <code>coaching-app-back</code>. Sign in with an admin
+          account (<code>profile.isAdmin = true</code>).
         </p>
+        {!apiBaseConfigured() ? (
+          <p className="form-error">Missing VITE_API_BASE_URL in .env</p>
+        ) : null}
         <label>
           Email
           <input
@@ -56,7 +62,7 @@ export function LoginPage({ onSuccess }: Props) {
           />
         </label>
         {error ? <p className="form-error">{error}</p> : null}
-        <button type="submit" disabled={busy}>
+        <button type="submit" disabled={busy || !apiBaseConfigured()}>
           {busy ? "Signing in…" : "Enter dashboard"}
         </button>
       </form>
