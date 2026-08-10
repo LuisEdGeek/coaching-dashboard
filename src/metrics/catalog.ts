@@ -243,7 +243,7 @@ export const P0_METRICS: MetricDefinition[] = [
     formula: "% uptime across environments",
     source: "Infrastructure Monitoring",
     status: "partial",
-    gap: "/health exists. Need external uptime (Uptime Kuma / Better Stack) → this card.",
+    gap: "Wired via UPTIME_KUMA_HEARTBEAT_URL → Uptime Kuma public status page.",
   },
   {
     id: "would_use_again",
