@@ -175,7 +175,7 @@ export function DashboardPage({ onLogout }: Props) {
             {tab === "kpis"
               ? loading
                 ? "Loading live scorecard…"
-                : (snap?.rangeLabel ?? "No range")
+                : rangeDisplay
               : "Ops panels"}
             {" · live API"}
             {tab === "kpis" && criticalAlerts > 0 ? ` · ${criticalAlerts} critical alerts` : ""}
