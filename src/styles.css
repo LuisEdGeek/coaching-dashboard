@@ -682,15 +682,28 @@ button.ghost:disabled {
   gap: 8px;
   flex-wrap: wrap;
   margin: 0 0 16px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--surface-solid);
+  border: 1px solid rgba(28, 26, 34, 0.14);
+  width: fit-content;
+  max-width: 100%;
+  box-shadow: 0 1px 0 rgba(28, 26, 34, 0.04);
 }
 
 .dash-tabs button {
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border: 1px solid transparent;
+  background: transparent;
   border-radius: 999px;
   padding: 8px 16px;
   cursor: pointer;
-  color: var(--ink-soft);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.dash-tabs button:hover {
+  background: var(--violet-soft);
+  color: var(--violet);
 }
 
 .dash-tabs button.is-active {
@@ -707,8 +720,8 @@ button.ghost:disabled {
   margin-bottom: 20px;
   padding: 12px 14px;
   border-radius: var(--radius);
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  border: 1px solid rgba(28, 26, 34, 0.14);
 }
 
 .dash-filters label {
@@ -747,6 +760,7 @@ button.ghost:disabled {
 
 .btn-apply {
   border: none;
+  color: #fff;
   background: var(--violet);
   color: #fff;
   border-radius: 999px;
@@ -761,8 +775,19 @@ button.ghost:disabled {
 }
 
 button.ghost:disabled {
-  opacity: 0.45;
+  opacity: 0.55;
   cursor: not-allowed;
+  background: var(--surface-solid);
+  color: var(--ink-soft);
+  border-color: rgba(28, 26, 34, 0.18);
+}
+
+.dash-filters button.ghost:disabled,
+.dash-filters .btn-apply:disabled {
+  opacity: 1;
+  background: #ebe8f4;
+  color: var(--ink-soft);
+  border: 1px solid rgba(28, 26, 34, 0.14);
 }
 
 .dash-actions--secondary {
