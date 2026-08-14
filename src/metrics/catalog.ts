@@ -168,10 +168,9 @@ export const P0_METRICS: MetricDefinition[] = [
     priority: "high",
     kind: "mixed",
     question: "Is the AI experience perceived positively?",
-    formula: "Thumbs up/down or session feedback ratings",
-    source: "In-App Feedback / Survey",
-    status: "blocked",
-    gap: "No thumbs UI or event in Flutter / LLM yet.",
+    formula: "Thumbs up/down totals (message-level stored; dashboard shows aggregates only)",
+    source: "In-App Feedback / ops_event",
+    status: "live",
   },
   {
     id: "did_this_help",

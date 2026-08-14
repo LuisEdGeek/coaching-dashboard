@@ -37,6 +37,7 @@ export type MetricValue = {
   delta?: string;
   alert?: boolean;
   available?: boolean;
+  series?: Array<{ t: string; v: number }>;
 };
 
 export type MetricsSnapshot = {
