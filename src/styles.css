@@ -649,11 +649,6 @@ button.ghost {
   margin: 0;
 }
 
-button.ghost:disabled {
-  opacity: 0.55;
-  cursor: wait;
-}
-
 @media (max-width: 900px) {
   .gaps__cols,
   .health__stats {
