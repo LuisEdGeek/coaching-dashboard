@@ -738,6 +738,33 @@ button.ghost:disabled {
   margin-top: 0;
 }
 
+.dash-filters__hint {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.btn-apply {
+  border: none;
+  background: var(--violet);
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-apply:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .dash-actions--secondary {
   margin-bottom: 16px;
 }

@@ -90,8 +90,13 @@ export function DashboardPage({ onLogout }: Props) {
   }, [onLogout, range, tab]);
 
   useEffect(() => {
+    if (tab !== "kpis") {
+      // Leaving KPIs mid-fetch used to leave loadState stuck on "loading".
+      setLoadState((s) => (s === "loading" ? "ready" : s));
+      return;
+    }
     return load();
-  }, [load, reloadKey]);
+  }, [load, reloadKey, tab]);
 
   function applyPreset(days: number) {
     setFromInput("");
@@ -111,6 +116,18 @@ export function DashboardPage({ onLogout }: Props) {
       to: dayBoundsIso(toInput, true),
     });
   }
+
+  function applyUserFilter(raw: string, switchToUsers = true) {
+    const q = raw.trim();
+    if (q.length < 2) return;
+    setUserQuery(q);
+    setSelectedUserId(null);
+    setSelectedUserLabel(null);
+    if (switchToUsers) setTab("users");
+  }
+
+  const canApplyDates = Boolean(fromInput && toInput && fromInput <= toInput);
+  const canApplyUser = userQueryInput.trim().length >= 2;
 
   const visible = useMemo(() => {
     if (filter === "all") return P0_METRICS;
@@ -189,7 +206,7 @@ export function DashboardPage({ onLogout }: Props) {
         ))}
       </nav>
 
-      <div className="dash-filters" role="group" aria-label="Date range">
+      <div className="dash-filters" role="group" aria-label="Date and user filters">
         <div className="filter-row">
           {PRESETS.map((p) => (
             <button
@@ -209,17 +226,46 @@ export function DashboardPage({ onLogout }: Props) {
           <input
             type="date"
             value={fromInput}
-            onChange={(e) => setFromInput(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setFromInput(v);
+              if (v && toInput && v <= toInput) {
+                setError(null);
+                setRange({
+                  from: dayBoundsIso(v, false),
+                  to: dayBoundsIso(toInput, true),
+                });
+              }
+            }}
           />
         </label>
         <label>
           To
-          <input type="date" value={toInput} onChange={(e) => setToInput(e.target.value)} />
+          <input
+            type="date"
+            value={toInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              setToInput(v);
+              if (fromInput && v && fromInput <= v) {
+                setError(null);
+                setRange({
+                  from: dayBoundsIso(fromInput, false),
+                  to: dayBoundsIso(v, true),
+                });
+              }
+            }}
+          />
         </label>
         <button
           type="button"
-          className="ghost"
-          disabled={!fromInput || !toInput || fromInput > toInput}
+          className={canApplyDates ? "btn-apply" : "ghost"}
+          disabled={!canApplyDates}
+          title={
+            canApplyDates
+              ? "Reload KPIs for this date range"
+              : "Choose both From and To dates first"
+          }
           onClick={applyCustomDates}
         >
           Apply dates
@@ -234,24 +280,21 @@ export function DashboardPage({ onLogout }: Props) {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                setUserQuery(userQueryInput.trim());
-                setSelectedUserId(null);
-                setSelectedUserLabel(null);
-                setTab("users");
+                applyUserFilter(userQueryInput);
               }
             }}
           />
         </label>
         <button
           type="button"
-          className="ghost"
-          disabled={userQueryInput.trim().length < 2}
-          onClick={() => {
-            setUserQuery(userQueryInput.trim());
-            setSelectedUserId(null);
-            setSelectedUserLabel(null);
-            setTab("users");
-          }}
+          className={canApplyUser ? "btn-apply" : "ghost"}
+          disabled={!canApplyUser}
+          title={
+            canApplyUser
+              ? "Search users and open the Users tab"
+              : "Type at least 2 characters"
+          }
+          onClick={() => applyUserFilter(userQueryInput)}
         >
           Apply user
         </button>
@@ -266,9 +309,18 @@ export function DashboardPage({ onLogout }: Props) {
               setSelectedUserLabel(null);
             }}
           >
-            Clear user{selectedUserLabel ? ` (${selectedUserLabel})` : userQuery ? ` (${userQuery})` : ""}
+            Clear user
+            {selectedUserLabel
+              ? ` (${selectedUserLabel})`
+              : userQuery
+                ? ` (${userQuery})`
+                : ""}
           </button>
         ) : null}
+        <p className="dash-filters__hint">
+          Dates: pick <strong>7d/14d/30d/90d</strong> or From+To (applies as you choose). User:
+          type email → <strong>Apply user</strong> (or Enter).
+        </p>
       </div>
 
       {tab === "kpis" ? (

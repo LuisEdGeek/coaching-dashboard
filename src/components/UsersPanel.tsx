@@ -20,24 +20,37 @@ export function UsersPanel({ range, userQuery, onPickUser }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    let timer: number | undefined;
     setLoading(true);
     setError(null);
-    const q: DateRangeQuery = {
-      ...range,
-      ...(effectiveQ && effectiveQ.length >= 2 ? { q: effectiveQ } : {}),
+
+    const run = () => {
+      const q: DateRangeQuery = {
+        ...range,
+        ...(effectiveQ && effectiveQ.length >= 2 ? { q: effectiveQ } : {}),
+      };
+      fetchAdminUsers(q)
+        .then((r) => {
+          if (!cancelled) setUsers(r.users);
+        })
+        .catch((e: unknown) => {
+          if (!cancelled) setError(e instanceof Error ? e.message : "Failed");
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
     };
-    fetchAdminUsers(q)
-      .then((r) => {
-        if (!cancelled) setUsers(r.users);
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+
+    // Debounce search so typing doesn't leave the panel stuck on Loading…
+    if (effectiveQ && effectiveQ.length >= 2) {
+      timer = window.setTimeout(run, 300);
+    } else {
+      run();
+    }
+
     return () => {
       cancelled = true;
+      if (timer) window.clearTimeout(timer);
     };
   }, [range.days, range.from, range.to, range.userId, effectiveQ]);
 
