@@ -28,26 +28,29 @@ const PRESETS = [
   { label: "90d", days: 90 },
 ] as const;
 
+/** HTML date `YYYY-MM-DD` → start/end of that local calendar day (ISO). */
+function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
+  const [y, m, d] = dateInput.split("-").map(Number);
+  if (!y || !m || !d) return new Date(dateInput).toISOString();
+  const dt = endOfDay
+    ? new Date(y, m - 1, d, 23, 59, 59, 999)
+    : new Date(y, m - 1, d, 0, 0, 0, 0);
+  return dt.toISOString();
+}
+
 export function DashboardPage({ onLogout }: Props) {
   const [tab, setTab] = useState<Tab>("kpis");
-  const [days, setDays] = useState(7);
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
+  /** Committed range — presets apply immediately; custom dates only on Apply. */
+  const [range, setRange] = useState<DateRangeQuery>({ days: 7 });
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [filter, setFilter] = useState<"all" | "critical" | "high" | "medium">("all");
   const [reloadKey, setReloadKey] = useState(0);
 
-  const range: DateRangeQuery = useMemo(() => {
-    if (fromInput && toInput) {
-      return {
-        from: new Date(fromInput).toISOString(),
-        to: new Date(toInput).toISOString(),
-      };
-    }
-    return { days };
-  }, [days, fromInput, toInput]);
+  const activePresetDays = range.days ?? null;
 
   const load = useCallback(() => {
     if (tab !== "kpis") return () => undefined;
@@ -76,6 +79,25 @@ export function DashboardPage({ onLogout }: Props) {
   useEffect(() => {
     return load();
   }, [load, reloadKey]);
+
+  function applyPreset(days: number) {
+    setFromInput("");
+    setToInput("");
+    setRange({ days });
+  }
+
+  function applyCustomDates() {
+    if (!fromInput || !toInput) return;
+    if (fromInput > toInput) {
+      setError("From date must be on or before To date");
+      return;
+    }
+    setError(null);
+    setRange({
+      from: dayBoundsIso(fromInput, false),
+      to: dayBoundsIso(toInput, true),
+    });
+  }
 
   const visible = useMemo(() => {
     if (filter === "all") return P0_METRICS;
@@ -160,13 +182,10 @@ export function DashboardPage({ onLogout }: Props) {
             <button
               key={p.days}
               type="button"
-              className={!fromInput && days === p.days ? "is-active" : undefined}
-              onClick={() => {
-                setDays(p.days);
-                setFromInput("");
-                setToInput("");
-                setReloadKey((k) => k + 1);
-              }}
+              className={
+                !range.from && activePresetDays === p.days ? "is-active" : undefined
+              }
+              onClick={() => applyPreset(p.days)}
             >
               {p.label}
             </button>
@@ -187,8 +206,8 @@ export function DashboardPage({ onLogout }: Props) {
         <button
           type="button"
           className="ghost"
-          disabled={!fromInput || !toInput}
-          onClick={() => setReloadKey((k) => k + 1)}
+          disabled={!fromInput || !toInput || fromInput > toInput}
+          onClick={applyCustomDates}
         >
           Apply dates
         </button>
