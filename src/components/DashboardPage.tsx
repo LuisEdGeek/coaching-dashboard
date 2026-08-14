@@ -160,6 +160,11 @@ export function DashboardPage({ onLogout }: Props) {
 
   const loading = loadState === "loading" && tab === "kpis";
 
+  const rangeDisplay =
+    range.from && fromInput && toInput
+      ? `${fromInput} → ${toInput} (real)`
+      : (snap?.rangeLabel ?? "No range");
+
   return (
     <div className="dash">
       <div className="page-atmosphere" aria-hidden />
