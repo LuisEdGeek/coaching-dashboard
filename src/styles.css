@@ -152,6 +152,7 @@ code {
 .dash {
   position: relative;
   z-index: 1;
+  isolation: isolate;
   width: min(1200px, calc(100% - 32px));
   margin: 0 auto;
   padding: 28px 0 64px;
@@ -163,7 +164,7 @@ code {
 .page-atmosphere {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background:
     radial-gradient(ellipse 70% 40% at 0% 0%, rgba(253, 216, 53, 0.35) 0%, transparent 55%),
@@ -844,17 +845,21 @@ button.ghost:disabled {
 }
 
 .ops-panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: #fff;
+  border: 1px solid rgba(28, 26, 34, 0.14);
   border-radius: var(--radius);
   padding: 22px;
   margin-bottom: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 12px rgba(28, 26, 34, 0.06);
+  position: relative;
+  z-index: 1;
+  color: var(--ink);
 }
 
 .ops-panel__head h2 {
   margin: 0 0 6px;
   font-family: var(--font-display);
+  color: var(--ink);
 }
 
 .ops-panel__head p {
@@ -908,12 +913,14 @@ button.ghost:disabled {
 
 .ops-table-wrap {
   overflow-x: auto;
+  background: #fff;
 }
 
 .ops-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  color: var(--ink);
 }
 
 .ops-table th,
@@ -922,6 +929,12 @@ button.ghost:disabled {
   padding: 10px 8px;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
+  color: var(--ink);
+}
+
+.ops-table th {
+  font-weight: 700;
+  color: var(--ink-soft);
 }
 
 .muted {
