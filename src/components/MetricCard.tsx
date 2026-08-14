@@ -21,6 +21,8 @@ export function MetricCard({ metric, value, loading = false }: Props) {
   const isUnavailable = !loading && (available === false || (!value && !loading));
   const isLive = !loading && available === true;
   const hasSeries = Boolean(value?.series && value.series.length > 0);
+  // Cards stay expandable so empty ranges still show a chart empty-state (QA + UX).
+  const canExpand = !loading;
 
   const display = loading
     ? "…"
@@ -60,9 +62,9 @@ export function MetricCard({ metric, value, loading = false }: Props) {
       <button
         type="button"
         className="metric-card__hit"
-        onClick={() => hasSeries && setOpen((v) => !v)}
-        disabled={!hasSeries}
-        aria-expanded={hasSeries ? open : undefined}
+        onClick={() => canExpand && setOpen((v) => !v)}
+        disabled={!canExpand}
+        aria-expanded={canExpand ? open : undefined}
       >
         <header className="metric-card__head">
           <span className={`status-pill status-pill--${statusClass}`}>{statusLabel}</span>
@@ -84,13 +86,17 @@ export function MetricCard({ metric, value, loading = false }: Props) {
             <span>{isUnavailable ? "Why" : "Needs"}</span> {reason}
           </p>
         ) : null}
-        {hasSeries ? (
+        {canExpand ? (
           <p className="metric-card__chart-hint">{open ? "Hide chart" : "Show chart"}</p>
         ) : null}
       </button>
-      {open && value?.series ? (
+      {open ? (
         <div className="metric-card__chart">
-          <LineChart series={value.series} />
+          {hasSeries && value?.series ? (
+            <LineChart series={value.series} />
+          ) : (
+            <p className="chart-empty">No daily series for this metric yet.</p>
+          )}
         </div>
       ) : null}
     </article>
