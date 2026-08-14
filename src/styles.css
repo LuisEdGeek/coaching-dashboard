@@ -178,6 +178,8 @@ code {
   justify-content: space-between;
   gap: 20px;
   align-items: flex-end;
+  position: relative;
+  z-index: 2;
 }
 
 .dash-top h1 {
@@ -679,21 +681,23 @@ button.ghost {
   margin: 0 0 16px;
   padding: 6px;
   border-radius: 999px;
-  background: var(--surface-solid);
-  border: 1px solid rgba(28, 26, 34, 0.14);
+  background: #fff;
+  border: 1px solid rgba(28, 26, 34, 0.18);
   width: fit-content;
   max-width: 100%;
-  box-shadow: 0 1px 0 rgba(28, 26, 34, 0.04);
+  box-shadow: 0 2px 10px rgba(28, 26, 34, 0.08);
+  position: relative;
+  z-index: 2;
 }
 
 .dash-tabs button {
-  border: 1px solid transparent;
-  background: transparent;
+  border: 1px solid rgba(28, 26, 34, 0.12);
+  background: #f3f0fa;
   border-radius: 999px;
   padding: 8px 16px;
   cursor: pointer;
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .dash-tabs button:hover {
@@ -715,8 +719,10 @@ button.ghost {
   margin-bottom: 20px;
   padding: 12px 14px;
   border-radius: var(--radius);
-  background: var(--surface-solid);
+  background: #fff;
   border: 1px solid rgba(28, 26, 34, 0.14);
+  position: relative;
+  z-index: 2;
 }
 
 .dash-filters label {
