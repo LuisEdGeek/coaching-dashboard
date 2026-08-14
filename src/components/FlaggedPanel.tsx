@@ -26,7 +26,7 @@ export function FlaggedPanel({ range }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [range.days, range.from, range.to]);
+  }, [range.days, range.from, range.to, range.userId]);
 
   return (
     <section className="ops-panel">

@@ -15,6 +15,9 @@ export type DateRangeQuery = {
   days?: number;
   from?: string;
   to?: string;
+  /** Email / name / id search */
+  q?: string;
+  userId?: string;
 };
 
 const TOKEN_KEY = "dc_dash_token";
@@ -39,6 +42,8 @@ function rangeQuery(q: DateRangeQuery): string {
   if (q.from) params.set("from", q.from);
   if (q.to) params.set("to", q.to);
   if (q.days != null && !q.from) params.set("days", String(q.days));
+  if (q.q) params.set("q", q.q);
+  if (q.userId) params.set("userId", q.userId);
   const s = params.toString();
   return s ? `?${s}` : "";
 }

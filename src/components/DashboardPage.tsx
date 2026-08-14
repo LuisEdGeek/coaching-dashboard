@@ -49,8 +49,21 @@ export function DashboardPage({ onLogout }: Props) {
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [filter, setFilter] = useState<"all" | "critical" | "high" | "medium">("all");
   const [reloadKey, setReloadKey] = useState(0);
+  const [userQueryInput, setUserQueryInput] = useState("");
+  const [userQuery, setUserQuery] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserLabel, setSelectedUserLabel] = useState<string | null>(null);
 
   const activePresetDays = range.days ?? null;
+
+  const opsRange: DateRangeQuery = useMemo(
+    () => ({
+      ...range,
+      ...(userQuery.trim().length >= 2 ? { q: userQuery.trim() } : {}),
+      ...(selectedUserId ? { userId: selectedUserId } : {}),
+    }),
+    [range, userQuery, selectedUserId],
+  );
 
   const load = useCallback(() => {
     if (tab !== "kpis") return () => undefined;
@@ -211,6 +224,51 @@ export function DashboardPage({ onLogout }: Props) {
         >
           Apply dates
         </button>
+        <label>
+          User
+          <input
+            type="search"
+            placeholder="email, name, or id…"
+            value={userQueryInput}
+            onChange={(e) => setUserQueryInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                setUserQuery(userQueryInput.trim());
+                setSelectedUserId(null);
+                setSelectedUserLabel(null);
+                setTab("users");
+              }
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          className="ghost"
+          disabled={userQueryInput.trim().length < 2}
+          onClick={() => {
+            setUserQuery(userQueryInput.trim());
+            setSelectedUserId(null);
+            setSelectedUserLabel(null);
+            setTab("users");
+          }}
+        >
+          Apply user
+        </button>
+        {userQuery || selectedUserId ? (
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              setUserQueryInput("");
+              setUserQuery("");
+              setSelectedUserId(null);
+              setSelectedUserLabel(null);
+            }}
+          >
+            Clear user{selectedUserLabel ? ` (${selectedUserLabel})` : userQuery ? ` (${userQuery})` : ""}
+          </button>
+        ) : null}
       </div>
 
       {tab === "kpis" ? (
@@ -265,8 +323,20 @@ export function DashboardPage({ onLogout }: Props) {
       ) : null}
 
       {tab === "rag" ? <RagPanel /> : null}
-      {tab === "flagged" ? <FlaggedPanel range={range} /> : null}
-      {tab === "users" ? <UsersPanel range={range} /> : null}
+      {tab === "flagged" ? <FlaggedPanel range={opsRange} /> : null}
+      {tab === "users" ? (
+        <UsersPanel
+          range={opsRange}
+          userQuery={userQuery}
+          onPickUser={(u) => {
+            setSelectedUserId(u.id);
+            setSelectedUserLabel(u.email);
+            setUserQueryInput(u.email);
+            setUserQuery(u.email);
+            setTab("flagged");
+          }}
+        />
+      ) : null}
     </div>
   );
 }

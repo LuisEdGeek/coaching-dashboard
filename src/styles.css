@@ -725,6 +725,19 @@ button.ghost:disabled {
   background: #fff;
 }
 
+.dash-filters input[type="search"],
+.dash-filters select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  min-width: 12rem;
+}
+
+.dash-filters--users {
+  margin-top: 0;
+}
+
 .dash-actions--secondary {
   margin-bottom: 16px;
 }
