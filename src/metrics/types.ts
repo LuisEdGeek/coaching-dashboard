@@ -29,6 +29,8 @@ export type MetricDefinition = {
   source: string;
   status: DataStatus;
   gap?: string;
+  /** Plain-language “how this number is made” for the expanded card. */
+  howItWorks: string;
 };
 
 export type MetricValue = {

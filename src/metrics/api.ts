@@ -137,6 +137,10 @@ export type FlaggedEvent = {
   kind: string;
   detector: string;
   categories: string[];
+  category: string | null;
+  riskLevel: string | null;
+  matchType: string | null;
+  responseRule: string | null;
   inputMessage: { id?: string; role: string; content: string } | null;
   outputMessage: { id?: string; role: string; content: string } | null;
   followingMessages: Array<{ id?: string; role: string; content: string }>;
@@ -144,6 +148,31 @@ export type FlaggedEvent = {
 
 export async function fetchFlagged(q: DateRangeQuery) {
   return adminGet<{ from: string; to: string; events: FlaggedEvent[] }>("/admin/ops/flagged", q);
+}
+
+export type GuardrailsCatalogKeyword = { text: string; precision: "hard" | "candidate" };
+
+export type GuardrailsCatalogCategory = {
+  id: string;
+  name: string;
+  layer: string;
+  excelRisk: string;
+  action: string;
+  outputAction: string | null;
+  keywords: GuardrailsCatalogKeyword[];
+  phrases: string[];
+};
+
+export type GuardrailsCatalog = {
+  version: string;
+  source: string;
+  ruleANumbers: string[];
+  responseRules: Array<{ item: string; appliesTo: string; instruction: string }>;
+  categories: GuardrailsCatalogCategory[];
+};
+
+export async function fetchGuardrailsCatalog() {
+  return adminGet<GuardrailsCatalog>("/admin/ops/guardrails-catalog");
 }
 
 export type RagDocument = {
@@ -154,6 +183,9 @@ export type RagDocument = {
   status: string;
   createdAt?: string;
   created_at?: string;
+  /** `coaching` (chat) or `faq` (product help). */
+  corpus?: string;
+  metadata?: Record<string, unknown> | null;
 };
 
 export async function fetchRagDocuments() {
@@ -201,7 +233,8 @@ export async function deleteRagDocument(id: string) {
     headers: authHeaders(token),
   });
   if (!res.ok && res.status !== 204) {
-    throw new Error(`Delete failed (${res.status})`);
+    const body = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
+    throw new Error(body?.error ?? body?.message ?? `Delete failed (${res.status})`);
   }
 }
 
