@@ -134,7 +134,7 @@ export function FlaggedPanel({ range }: Props) {
                   <div>
                     <h4>Next 3 messages</h4>
                     {ev.followingMessages.length === 0 ? (
-                      <p className="muted">None yet (or hydrate unavailable).</p>
+                      <p className="muted">No later messages in this session (or hydrate unavailable).</p>
                     ) : (
                       ev.followingMessages.map((m, i) => (
                         <MsgBlock key={m.id ?? i} label={`${m.role}`} msg={m} />
