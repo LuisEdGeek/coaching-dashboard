@@ -39,10 +39,18 @@ function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
 }
 
 export function DashboardPage({ onLogout }: Props) {
-  const [tab, setTab] = useState<Tab>("kpis");
+  const [tab, setTab] = useState<Tab>(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t === "flagged" || t === "rag" || t === "users" || t === "kpis") return t;
+    } catch {
+      /* ignore */
+    }
+    return "kpis";
+  });
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
-  /** Committed range — presets apply immediately; custom dates only on Apply. */
+  /** Committed range — presets and From/To commit as soon as both dates are valid. */
   const [range, setRange] = useState<DateRangeQuery>({ days: 7 });
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +63,8 @@ export function DashboardPage({ onLogout }: Props) {
   const [selectedUserLabel, setSelectedUserLabel] = useState<string | null>(null);
 
   const activePresetDays = range.days ?? null;
+  const showDateFilters = tab === "kpis" || tab === "flagged" || tab === "users";
+  const showUserFilters = tab === "flagged" || tab === "users";
 
   const opsRange: DateRangeQuery = useMemo(
     () => ({
@@ -104,16 +114,12 @@ export function DashboardPage({ onLogout }: Props) {
     setRange({ days });
   }
 
-  function applyCustomDates() {
-    if (!fromInput || !toInput) return;
-    if (fromInput > toInput) {
-      setError("From date must be on or before To date");
-      return;
-    }
+  function commitCustomDates(from: string, to: string) {
+    if (!from || !to || from > to) return;
     setError(null);
     setRange({
-      from: dayBoundsIso(fromInput, false),
-      to: dayBoundsIso(toInput, true),
+      from: dayBoundsIso(from, false),
+      to: dayBoundsIso(to, true),
     });
   }
 
@@ -126,7 +132,6 @@ export function DashboardPage({ onLogout }: Props) {
     if (switchToUsers) setTab("users");
   }
 
-  const canApplyDates = Boolean(fromInput && toInput && fromInput <= toInput);
   const canApplyUser = userQueryInput.trim().length >= 2;
 
   const visible = useMemo(() => {
@@ -162,7 +167,7 @@ export function DashboardPage({ onLogout }: Props) {
 
   const rangeDisplay =
     range.from && fromInput && toInput
-      ? `${fromInput} → ${toInput} (real)`
+      ? `${fromInput} → ${toInput}`
       : (snap?.rangeLabel ?? "No range");
 
   return (
@@ -176,7 +181,9 @@ export function DashboardPage({ onLogout }: Props) {
               ? loading
                 ? "Loading live scorecard…"
                 : rangeDisplay
-              : "Ops panels"}
+              : tab === "rag"
+                ? "Coaching chat and product FAQ are separate knowledge bases"
+                : "Ops panels"}
             {" · live API"}
             {tab === "kpis" && criticalAlerts > 0 ? ` · ${criticalAlerts} critical alerts` : ""}
           </p>
@@ -191,11 +198,11 @@ export function DashboardPage({ onLogout }: Props) {
         </div>
       </header>
 
-      <nav className="dash-tabs" aria-label="Dashboard sections">
+      <div className="dash-tabs" role="tablist" aria-label="Dashboard sections">
         {(
           [
             ["kpis", "KPIs"],
-            ["rag", "RAG"],
+            ["rag", "Knowledge"],
             ["flagged", "Flagged"],
             ["users", "Users"],
           ] as const
@@ -203,148 +210,19 @@ export function DashboardPage({ onLogout }: Props) {
           <button
             key={id}
             type="button"
+            role="tab"
+            id={`tab-${id}`}
+            aria-selected={tab === id}
             className={tab === id ? "is-active" : undefined}
             onClick={() => setTab(id)}
           >
             {label}
           </button>
         ))}
-      </nav>
-
-      <div className="dash-filters" role="group" aria-label="Date and user filters">
-        <div className="filter-row">
-          {PRESETS.map((p) => (
-            <button
-              key={p.days}
-              type="button"
-              className={
-                !range.from && activePresetDays === p.days ? "is-active" : undefined
-              }
-              onClick={() => applyPreset(p.days)}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <label>
-          From
-          <input
-            type="date"
-            value={fromInput}
-            onChange={(e) => {
-              const v = e.target.value;
-              setFromInput(v);
-              if (v && toInput && v <= toInput) {
-                setError(null);
-                setRange({
-                  from: dayBoundsIso(v, false),
-                  to: dayBoundsIso(toInput, true),
-                });
-              }
-            }}
-          />
-        </label>
-        <label>
-          To
-          <input
-            type="date"
-            value={toInput}
-            onChange={(e) => {
-              const v = e.target.value;
-              setToInput(v);
-              if (fromInput && v && fromInput <= v) {
-                setError(null);
-                setRange({
-                  from: dayBoundsIso(fromInput, false),
-                  to: dayBoundsIso(v, true),
-                });
-              }
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          className={canApplyDates ? "btn-apply" : "ghost"}
-          disabled={!canApplyDates}
-          title={
-            canApplyDates
-              ? "Reload KPIs for this date range"
-              : "Choose both From and To dates first"
-          }
-          onClick={applyCustomDates}
-        >
-          Apply dates
-        </button>
-        <label>
-          User
-          <input
-            type="search"
-            placeholder="email, name, or id…"
-            value={userQueryInput}
-            onChange={(e) => setUserQueryInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                applyUserFilter(userQueryInput);
-              }
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          className={canApplyUser ? "btn-apply" : "ghost"}
-          disabled={!canApplyUser}
-          title={
-            canApplyUser
-              ? "Search users and open the Users tab"
-              : "Type at least 2 characters"
-          }
-          onClick={() => applyUserFilter(userQueryInput)}
-        >
-          Apply user
-        </button>
-        {userQuery || selectedUserId ? (
-          <button
-            type="button"
-            className="ghost"
-            onClick={() => {
-              setUserQueryInput("");
-              setUserQuery("");
-              setSelectedUserId(null);
-              setSelectedUserLabel(null);
-            }}
-          >
-            Clear user
-            {selectedUserLabel
-              ? ` (${selectedUserLabel})`
-              : userQuery
-                ? ` (${userQuery})`
-                : ""}
-          </button>
-        ) : null}
-        <p className="dash-filters__hint">
-          Dates: pick <strong>7d/14d/30d/90d</strong> or From+To (applies as you choose). User:
-          type email → <strong>Apply user</strong> (or Enter).
-        </p>
       </div>
 
       {tab === "kpis" ? (
         <>
-          <div className="dash-actions dash-actions--secondary">
-            <div className="filter-row" role="group" aria-label="Priority filter">
-              {(["all", "critical", "high", "medium"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={filter === f ? "is-active" : undefined}
-                  onClick={() => setFilter(f)}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {error ? (
             <div className="banner-error" role="alert">
               <p>{error}</p>
@@ -355,6 +233,131 @@ export function DashboardPage({ onLogout }: Props) {
           ) : null}
 
           <HealthSummary metrics={P0_METRICS} snap={snap} loading={loading} />
+        </>
+      ) : null}
+
+      {showDateFilters || showUserFilters ? (
+        <div
+          className="dash-filters"
+          role="group"
+          aria-label={showUserFilters && !showDateFilters ? "User filters" : "Date and user filters"}
+        >
+          {showDateFilters ? (
+            <>
+              <div className="filter-row" role="group" aria-label="Range presets">
+                {PRESETS.map((p) => {
+                  const active = !range.from && activePresetDays === p.days;
+                  return (
+                    <button
+                      key={p.days}
+                      type="button"
+                      aria-pressed={active}
+                      className={active ? "is-active" : undefined}
+                      onClick={() => applyPreset(p.days)}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <label>
+                From
+                <input
+                  type="date"
+                  value={fromInput}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFromInput(v);
+                    commitCustomDates(v, toInput);
+                  }}
+                />
+              </label>
+              <label>
+                To
+                <input
+                  type="date"
+                  value={toInput}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setToInput(v);
+                    commitCustomDates(fromInput, v);
+                  }}
+                />
+              </label>
+            </>
+          ) : null}
+
+          {showUserFilters ? (
+            <>
+              <label>
+                User
+                <input
+                  type="search"
+                  placeholder="email, name, or id…"
+                  value={userQueryInput}
+                  onChange={(e) => setUserQueryInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyUserFilter(userQueryInput);
+                    }
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                className={canApplyUser ? "btn-apply" : "ghost"}
+                disabled={!canApplyUser}
+                title={
+                  canApplyUser
+                    ? "Search users and open the Users tab"
+                    : "Type at least 2 characters"
+                }
+                onClick={() => applyUserFilter(userQueryInput)}
+              >
+                Apply user
+              </button>
+              {userQuery || selectedUserId ? (
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => {
+                    setUserQueryInput("");
+                    setUserQuery("");
+                    setSelectedUserId(null);
+                    setSelectedUserLabel(null);
+                  }}
+                >
+                  Clear user
+                  {selectedUserLabel
+                    ? ` (${selectedUserLabel})`
+                    : userQuery
+                      ? ` (${userQuery})`
+                      : ""}
+                </button>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      ) : null}
+
+      {tab === "kpis" ? (
+        <>
+          <div className="dash-actions dash-actions--secondary">
+            <div className="filter-row" role="group" aria-label="Priority filter">
+              {(["all", "critical", "high", "medium"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={filter === f}
+                  className={filter === f ? "is-active" : undefined}
+                  onClick={() => setFilter(f)}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {(loading || snap) &&
             byCategory.map(({ cat, metrics }) => (
