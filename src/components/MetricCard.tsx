@@ -21,7 +21,6 @@ export function MetricCard({ metric, value, loading = false }: Props) {
   const isUnavailable = !loading && (available === false || (!value && !loading));
   const isLive = !loading && available === true;
   const hasSeries = Boolean(value?.series && value.series.length > 0);
-  // Cards stay expandable so empty ranges still show a chart empty-state (QA + UX).
   const canExpand = !loading;
 
   const display = loading
@@ -87,15 +86,18 @@ export function MetricCard({ metric, value, loading = false }: Props) {
           </p>
         ) : null}
         {canExpand ? (
-          <p className="metric-card__chart-hint">{open ? "Hide chart" : "Show chart"}</p>
+          <p className="metric-card__chart-hint">{open ? "Ocultar detalle" : "Ver detalle"}</p>
         ) : null}
       </button>
       {open ? (
         <div className="metric-card__chart">
+          <p className="metric-card__how">{metric.howItWorks}</p>
           {hasSeries && value?.series ? (
             <LineChart series={value.series} />
           ) : (
-            <p className="chart-empty">No daily series for this metric yet.</p>
+            <p className="chart-empty">
+              Aún no hay línea día a día en este rango — el número de arriba sí se actualiza cuando llegan eventos.
+            </p>
           )}
         </div>
       ) : null}

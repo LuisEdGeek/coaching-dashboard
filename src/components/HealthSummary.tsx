@@ -54,10 +54,12 @@ export function HealthSummary({ metrics, snap, loading }: Props) {
 
   const headline =
     alerts > 0
-      ? `${live} metrics reporting · ${alerts} alert${alerts === 1 ? "" : "s"} need attention`
+      ? `${live} live · ${unavailable} still dark · ${alerts} alert${alerts === 1 ? "" : "s"} need attention`
       : unavailable === metrics.length
         ? "No live readings in this range yet — check gaps below"
-        : `Looking steady — ${live} metrics live, no alerts`;
+        : unavailable > 0
+          ? `${live} live · ${unavailable} still dark · no alerts`
+          : `${live} live · no alerts`;
 
   return (
     <section className="health" aria-live="polite">

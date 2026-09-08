@@ -6,7 +6,7 @@ type Props = {
 };
 
 export function LoginPage({ onSuccess }: Props) {
-  const [email, setEmail] = useState("admin@deliberate.coach");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,8 +33,11 @@ export function LoginPage({ onSuccess }: Props) {
       <div className="login-bg" aria-hidden />
       <form className="login-panel" onSubmit={onSubmit}>
         <h1>Deliberate KPIs</h1>
+        <p className="login-lead">Beta ops scorecard for Deliberate Coaching — live API truth, honest gaps.</p>
         {!apiBaseConfigured() ? (
-          <p className="form-error">Missing VITE_API_BASE_URL in .env</p>
+          <p className="form-error" role="alert">
+            Missing VITE_API_BASE_URL in .env
+          </p>
         ) : null}
         <label>
           Email
@@ -56,7 +59,11 @@ export function LoginPage({ onSuccess }: Props) {
             required
           />
         </label>
-        {error ? <p className="form-error">{error}</p> : null}
+        {error ? (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        ) : null}
         <button type="submit" disabled={busy || !apiBaseConfigured()}>
           {busy ? "Signing in…" : "Enter dashboard"}
         </button>
