@@ -44,6 +44,32 @@ export const P0_METRICS: MetricDefinition[] = [
       "Cada vez que el coach contesta, medimos el turno completo y, aparte, la capa de pensamiento (approver). La tarjeta es el tiempo típico de espera; debajo ves cuánto de eso es esa segunda llamada.",
   },
   {
+    id: "ai_total_tokens",
+    name: "AI Total Tokens",
+    category: "AI Quality",
+    priority: "high",
+    kind: "quantitative",
+    question: "How many tokens did coaching burn in this period?",
+    formula: "sum(ai_usage_logs.total_tokens) in selected range",
+    source: "LLM ai_usage_logs",
+    status: "live",
+    howItWorks:
+      "Sumamos todos los tokens de las llamadas de IA (coach, classifier, approver, embeddings, etc.) en el rango de fechas del dashboard. El mismo From/To o preset (7d/30d/…) que el resto de KPIs.",
+  },
+  {
+    id: "ai_total_cost_usd",
+    name: "AI Total Cost (USD)",
+    category: "AI Quality",
+    priority: "high",
+    kind: "quantitative",
+    question: "How much did AI spend in this period?",
+    formula: "sum(ai_usage_logs.estimated_cost_usd) in selected range",
+    source: "LLM ai_usage_logs",
+    status: "live",
+    howItWorks:
+      "Sumamos el costo estimado en dólares de esas mismas llamadas de IA en el rango filtrado. Cambia el preset o From/To y este número se recalcula con el mismo filtro que Latency y el resto.",
+  },
+  {
     id: "payment_failure_rate",
     name: "Payment Failure Rate",
     category: "Operational Stability",
