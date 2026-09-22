@@ -64,7 +64,7 @@ export function DashboardPage({ onLogout }: Props) {
 
   const activePresetDays = range.days ?? null;
   const showDateFilters = tab === "kpis" || tab === "flagged" || tab === "users";
-  const showUserFilters = tab === "flagged" || tab === "users";
+  const showUserFilters = tab === "kpis" || tab === "flagged" || tab === "users";
 
   const opsRange: DateRangeQuery = useMemo(
     () => ({
@@ -81,7 +81,8 @@ export function DashboardPage({ onLogout }: Props) {
     setError(null);
     let cancelled = false;
 
-    fetchMetricsSnapshot(range)
+    // Same date (+ optional user) filters as the rest of the ops surface.
+    fetchMetricsSnapshot(opsRange)
       .then((s) => {
         if (cancelled) return;
         setSnap(s);
@@ -97,7 +98,7 @@ export function DashboardPage({ onLogout }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [onLogout, range, tab]);
+  }, [onLogout, opsRange, tab]);
 
   useEffect(() => {
     if (tab !== "kpis") {
