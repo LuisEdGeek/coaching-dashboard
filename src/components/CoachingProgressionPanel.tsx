@@ -58,9 +58,9 @@ export function CoachingProgressionPanel({ range }: Props) {
       <header className="ops-panel__head">
         <h2>Beta coaching progression</h2>
         <p>
-          Same cohort as the funnel. Heart / Spark / Pulse = ever reached
-          (number_* &gt; 0). Journey completed = journey.status completed — not
-          just having all three stages.
+          Same group as the funnel above. Each bar counts how many people ever
+          reached that step — Heart, Spark, Pulse, a later return visit, then a
+          finished Journey.
           {data ? (
             <>
               {" "}
