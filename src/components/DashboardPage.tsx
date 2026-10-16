@@ -6,6 +6,7 @@ import { HealthSummary } from "./HealthSummary";
 import { RagPanel } from "./RagPanel";
 import { UsersPanel } from "./UsersPanel";
 import { BetaFunnelPanel } from "./BetaFunnelPanel";
+import { CoachingProgressionPanel } from "./CoachingProgressionPanel";
 import { CoacheesPanel } from "./CoacheesPanel";
 import { FailuresPanel } from "./FailuresPanel";
 import { CATEGORY_ORDER, P0_METRICS } from "../metrics/catalog";
@@ -412,6 +413,10 @@ export function DashboardPage({ onLogout }: Props) {
       {tab === "beta" ? (
         <>
           <BetaFunnelPanel key={`funnel-${betaReloadKey}`} range={betaRange} />
+          <CoachingProgressionPanel
+            key={`progression-${betaReloadKey}`}
+            range={betaRange}
+          />
           <CoacheesPanel
             query={coacheesQuery}
             onQueryChange={(patch) => {

@@ -274,6 +274,30 @@ export async function fetchFunnel(q: DateRangeQuery = { days: 7 }): Promise<Funn
   return adminGet<FunnelResponse>("/admin/metrics/funnel", q);
 }
 
+export type CoachingProgressionKey =
+  | "first_session_completed"
+  | "heart_confirmed"
+  | "first_spark_confirmed"
+  | "first_pulse_agreed"
+  | "returned_for_followup"
+  | "journey_completed";
+
+export type CoachingProgressionResponse = {
+  from: string;
+  to: string;
+  include_test: boolean;
+  invited: number;
+  scale_max: number;
+  milestones: Array<{ key: CoachingProgressionKey; count: number }>;
+  generated_at: string;
+};
+
+export async function fetchCoachingProgression(
+  q: DateRangeQuery = { days: 7 },
+): Promise<CoachingProgressionResponse> {
+  return adminGet<CoachingProgressionResponse>("/admin/metrics/coaching-progression", q);
+}
+
 export type CoacheeStage =
   | "Not started"
   | "Exploring Heart"

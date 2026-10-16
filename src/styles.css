@@ -993,17 +993,70 @@ button.ghost:disabled {
   color: var(--muted);
 }
 
-.funnel-stats .health__stat {
-  min-width: 140px;
+.hbar-chart {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px 8px;
+  color: var(--ink);
 }
 
-.funnel-stats__pct {
+.hbar-chart__svg {
   display: block;
-  margin-top: 4px;
-  font-style: normal;
+  width: 100%;
+  height: auto;
+  max-width: 720px;
+}
+
+.hbar-chart__grid {
+  stroke: rgba(28, 26, 34, 0.12);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.hbar-chart__tick {
+  fill: var(--muted);
+  font-size: 10px;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__label {
+  fill: var(--ink);
+  font-size: 11px;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__bar {
+  fill: #4a7fd4;
+}
+
+.hbar-chart__value {
+  fill: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__details {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
   font-size: 0.78rem;
   color: var(--muted);
-  font-weight: 500;
+}
+
+.hbar-chart__details li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.hbar-chart__details em {
+  font-style: normal;
+  color: var(--ink-soft);
 }
 
 .filter-check {
