@@ -3,7 +3,6 @@ import {
   downloadCoacheesCsv,
   fetchCoachees,
   patchCoacheeTestAccount,
-  postInvites,
   type CoacheeRow,
   type DateRangeQuery,
 } from "../metrics/api";
@@ -11,30 +10,16 @@ import {
 type Props = {
   query: Pick<DateRangeQuery, "include_test" | "stuck">;
   onQueryChange: (patch: Partial<Pick<DateRangeQuery, "include_test" | "stuck">>) => void;
-  onFunnelRefresh?: () => void;
 };
 
 type SortKey =
   | "id"
-  | "invited"
   | "registered"
   | "verified"
   | "onboarding"
   | "stage"
   | "last_activity_at"
   | "is_test_account";
-
-function parseEmailsFromText(raw: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const part of raw.split(/[\n,;\t]+/u)) {
-    const email = part.trim().toLowerCase();
-    if (!email.includes("@") || seen.has(email)) continue;
-    seen.add(email);
-    out.push(email);
-  }
-  return out;
-}
 
 function cmpBool(a: boolean, b: boolean): number {
   return Number(a) - Number(b);
@@ -44,16 +29,13 @@ function cmpStr(a: string | null, b: string | null): number {
   return (a ?? "").localeCompare(b ?? "");
 }
 
-export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) {
+export function CoacheesPanel({ query, onQueryChange }: Props) {
   const [rows, setRows] = useState<CoacheeRow[]>([]);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("last_activity_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [inviteText, setInviteText] = useState("");
-  const [inviteBusy, setInviteBusy] = useState(false);
-  const [inviteMsg, setInviteMsg] = useState<string | null>(null);
   const [csvBusy, setCsvBusy] = useState(false);
   const [patchingId, setPatchingId] = useState<string | null>(null);
 
@@ -83,9 +65,6 @@ export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) 
       switch (sortKey) {
         case "id":
           c = a.id.localeCompare(b.id);
-          break;
-        case "invited":
-          c = cmpBool(a.invited, b.invited);
           break;
         case "registered":
           c = cmpBool(a.registered, b.registered);
@@ -143,23 +122,6 @@ export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) 
     }
   }
 
-  async function handleInvites(emails?: string[], csv?: string) {
-    setInviteBusy(true);
-    setInviteMsg(null);
-    setError(null);
-    try {
-      const result = await postInvites({ emails, csv, source: "dashboard" });
-      setInviteMsg(`Recorded ${result.upserted} invite${result.upserted === 1 ? "" : "s"}.`);
-      setInviteText("");
-      await load();
-      onFunnelRefresh?.();
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Invite upload failed");
-    } finally {
-      setInviteBusy(false);
-    }
-  }
-
   async function toggleTest(row: CoacheeRow) {
     const next = !row.is_test_account;
     setPatchingId(row.id);
@@ -213,42 +175,6 @@ export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) 
         </button>
       </div>
 
-      <div className="ops-form">
-        <label>
-          Invite emails (paste, one per line or comma-separated)
-          <textarea
-            rows={3}
-            value={inviteText}
-            placeholder="coach@example.com"
-            onChange={(e) => setInviteText(e.target.value)}
-          />
-        </label>
-        <div className="ops-form__actions">
-          <button
-            type="button"
-            disabled={inviteBusy || parseEmailsFromText(inviteText).length === 0}
-            onClick={() => void handleInvites(parseEmailsFromText(inviteText))}
-          >
-            {inviteBusy ? "Sending…" : "Send invites"}
-          </button>
-          <label className="file-btn">
-            Upload CSV
-            <input
-              type="file"
-              accept=".csv,text/csv"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = "";
-                if (!file) return;
-                void file.text().then((csv) => handleInvites(undefined, csv));
-              }}
-            />
-          </label>
-        </div>
-        {inviteMsg ? <p className="muted">{inviteMsg}</p> : null}
-      </div>
-
       {error ? (
         <div className="banner-error" role="alert">
           {error}
@@ -265,11 +191,6 @@ export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) 
                 <th>
                   <button type="button" className="th-sort" onClick={() => toggleSort("id")}>
                     ID{sortIndicator("id")}
-                  </button>
-                </th>
-                <th>
-                  <button type="button" className="th-sort" onClick={() => toggleSort("invited")}>
-                    Invited{sortIndicator("invited")}
                   </button>
                 </th>
                 <th>
@@ -318,7 +239,6 @@ export function CoacheesPanel({ query, onQueryChange, onFunnelRefresh }: Props) 
                   <td>
                     <code>{row.id}</code>
                   </td>
-                  <td>{row.invited ? "yes" : "no"}</td>
                   <td>{row.registered ? "yes" : "no"}</td>
                   <td>{row.verified ? "yes" : "no"}</td>
                   <td>{row.onboarding ? "yes" : "no"}</td>

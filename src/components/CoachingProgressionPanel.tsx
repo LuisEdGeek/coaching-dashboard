@@ -59,7 +59,7 @@ export function CoachingProgressionPanel({ range }: Props) {
         <h2>Beta coaching progression</h2>
         <p>
           Cumulative Heart → Spark → Pulse milestones in range
-          {data ? ` · ${data.invited.toLocaleString()} invited` : null}.
+          {data ? ` · ${data.registered.toLocaleString()} registered` : null}.
           {data ? (
             <>
               {" "}

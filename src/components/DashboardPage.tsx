@@ -423,7 +423,6 @@ export function DashboardPage({ onLogout }: Props) {
               if (patch.include_test != null) setBetaIncludeTest(patch.include_test);
               if (patch.stuck != null) setBetaStuck(patch.stuck);
             }}
-            onFunnelRefresh={() => setBetaReloadKey((k) => k + 1)}
           />
           <FailuresPanel range={range} />
         </>
