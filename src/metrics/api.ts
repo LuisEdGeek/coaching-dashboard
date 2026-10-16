@@ -338,7 +338,7 @@ export async function downloadCoacheesCsv(
   const token = getStoredToken();
   if (!token || !API_BASE) throw new Error("Not signed in");
 
-  const res = await fetch(`${API_BASE}/admin/coachees.csv${rangeQuery(q)}`, {
+  const res = await fetch(`${API_BASE}/admin/coachees/csv${rangeQuery(q)}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.status === 401 || res.status === 403) {
