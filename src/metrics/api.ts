@@ -249,7 +249,6 @@ export function apiBaseConfigured(): boolean {
 }
 
 export type FunnelStageKey =
-  | "invited"
   | "registered"
   | "verified"
   | "onboarding"
@@ -286,7 +285,7 @@ export type CoachingProgressionResponse = {
   from: string;
   to: string;
   include_test: boolean;
-  invited: number;
+  registered: number;
   scale_max: number;
   milestones: Array<{ key: CoachingProgressionKey; count: number }>;
   generated_at: string;
@@ -308,7 +307,6 @@ export type CoacheeStage =
 
 export type CoacheeRow = {
   id: string;
-  invited: boolean;
   registered: boolean;
   verified: boolean;
   onboarding: boolean;
@@ -374,30 +372,6 @@ export async function downloadCoacheesCsv(
     throw new Error(body || `API ${res.status}`);
   }
   return res.blob();
-}
-
-export async function postInvites(input: {
-  emails?: string[];
-  csv?: string;
-  source?: string;
-}): Promise<{ ok: boolean; upserted: number; emails: number }> {
-  const token = getStoredToken();
-  if (!token || !API_BASE) throw new Error("Not signed in");
-
-  const res = await fetch(`${API_BASE}/admin/invites`, {
-    method: "POST",
-    headers: { ...authHeaders(token), "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (res.status === 401 || res.status === 403) {
-    clearSession();
-    throw new Error("Session expired or not admin");
-  }
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(body?.message ?? `API ${res.status}`);
-  }
-  return res.json() as Promise<{ ok: boolean; upserted: number; emails: number }>;
 }
 
 export type FailureKindMetrics = {

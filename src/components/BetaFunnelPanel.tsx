@@ -12,7 +12,6 @@ type Props = {
 };
 
 const STAGE_LABELS: Record<FunnelStageKey, string> = {
-  invited: "Invited",
   registered: "Registered",
   verified: "Verified",
   onboarding: "Onboarding complete",
@@ -50,7 +49,9 @@ export function BetaFunnelPanel({ range }: Props) {
       label: STAGE_LABELS[stage.key],
       count: stage.count,
       detail:
-        stage.key === "invited" ? undefined : `${stage.pct_of_previous.toFixed(1)}% of previous`,
+        stage.key === "registered"
+          ? undefined
+          : `${stage.pct_of_previous.toFixed(1)}% of previous`,
     })) ?? [];
 
   const scaleMax = Math.max(...rows.map((r) => r.count), 1);
