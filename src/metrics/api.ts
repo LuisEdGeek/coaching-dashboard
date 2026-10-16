@@ -18,6 +18,10 @@ export type DateRangeQuery = {
   /** Email / name / id search */
   q?: string;
   userId?: string;
+  /** Include QA / demo accounts in beta KPIs (default false). */
+  include_test?: boolean;
+  /** Coachees only: no session.turn in the last 7 days. */
+  stuck?: boolean;
 };
 
 const TOKEN_KEY = "dc_dash_token";
@@ -44,6 +48,8 @@ function rangeQuery(q: DateRangeQuery): string {
   if (q.days != null && !q.from) params.set("days", String(q.days));
   if (q.q) params.set("q", q.q);
   if (q.userId) params.set("userId", q.userId);
+  if (q.include_test) params.set("include_test", "true");
+  if (q.stuck) params.set("stuck", "true");
   const s = params.toString();
   return s ? `?${s}` : "";
 }
@@ -240,4 +246,150 @@ export async function deleteRagDocument(id: string) {
 
 export function apiBaseConfigured(): boolean {
   return Boolean(API_BASE);
+}
+
+export type FunnelStageKey =
+  | "invited"
+  | "registered"
+  | "verified"
+  | "onboarding"
+  | "first_session_started"
+  | "first_session_completed";
+
+export type FunnelStageRow = {
+  key: FunnelStageKey;
+  count: number;
+  pct_of_previous: number;
+};
+
+export type FunnelResponse = {
+  from: string;
+  to: string;
+  include_test: boolean;
+  stages: FunnelStageRow[];
+  generated_at: string;
+};
+
+export async function fetchFunnel(q: DateRangeQuery = { days: 7 }): Promise<FunnelResponse> {
+  return adminGet<FunnelResponse>("/admin/metrics/funnel", q);
+}
+
+export type CoacheeStage =
+  | "Not started"
+  | "Exploring Heart"
+  | "Heart confirmed"
+  | "Exploring Spark"
+  | "Spark confirmed"
+  | "Pulse agreed";
+
+export type CoacheeRow = {
+  id: string;
+  invited: boolean;
+  registered: boolean;
+  verified: boolean;
+  onboarding: boolean;
+  stage: CoacheeStage;
+  last_activity_at: string | null;
+  is_test_account: boolean;
+};
+
+export type CoacheesResponse = {
+  include_test: boolean;
+  stuck: boolean;
+  coachees: CoacheeRow[];
+  generated_at: string;
+};
+
+export async function fetchCoachees(
+  q: Pick<DateRangeQuery, "include_test" | "stuck"> = {},
+): Promise<CoacheesResponse> {
+  return adminGet<CoacheesResponse>("/admin/coachees", q);
+}
+
+export async function patchCoacheeTestAccount(
+  id: string,
+  is_test_account: boolean,
+): Promise<{ id: string; is_test_account: boolean }> {
+  const token = getStoredToken();
+  if (!token || !API_BASE) throw new Error("Not signed in");
+
+  const res = await fetch(
+    `${API_BASE}/admin/coachees/${encodeURIComponent(id)}/test-account`,
+    {
+      method: "PATCH",
+      headers: { ...authHeaders(token), "Content-Type": "application/json" },
+      body: JSON.stringify({ is_test_account }),
+    },
+  );
+  if (res.status === 401 || res.status === 403) {
+    clearSession();
+    throw new Error("Session expired or not admin");
+  }
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(body?.message ?? `API ${res.status}`);
+  }
+  return res.json() as Promise<{ id: string; is_test_account: boolean }>;
+}
+
+export async function downloadCoacheesCsv(
+  q: Pick<DateRangeQuery, "include_test" | "stuck"> = {},
+): Promise<Blob> {
+  const token = getStoredToken();
+  if (!token || !API_BASE) throw new Error("Not signed in");
+
+  const res = await fetch(`${API_BASE}/admin/coachees/csv${rangeQuery(q)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401 || res.status === 403) {
+    clearSession();
+    throw new Error("Session expired or not admin");
+  }
+  if (!res.ok) {
+    const body = (await res.text().catch(() => ""));
+    throw new Error(body || `API ${res.status}`);
+  }
+  return res.blob();
+}
+
+export async function postInvites(input: {
+  emails?: string[];
+  csv?: string;
+  source?: string;
+}): Promise<{ ok: boolean; upserted: number; emails: number }> {
+  const token = getStoredToken();
+  if (!token || !API_BASE) throw new Error("Not signed in");
+
+  const res = await fetch(`${API_BASE}/admin/invites`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (res.status === 401 || res.status === 403) {
+    clearSession();
+    throw new Error("Session expired or not admin");
+  }
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(body?.message ?? `API ${res.status}`);
+  }
+  return res.json() as Promise<{ ok: boolean; upserted: number; emails: number }>;
+}
+
+export type FailureKindMetrics = {
+  total: number;
+  daily: Array<{ t: string; v: number }>;
+  recent_session_ids: string[];
+};
+
+export type FailuresResponse = {
+  from: string;
+  to: string;
+  turn_failed: FailureKindMetrics;
+  persist_failed: FailureKindMetrics;
+  generated_at: string;
+};
+
+export async function fetchFailures(q: DateRangeQuery = { days: 7 }): Promise<FailuresResponse> {
+  return adminGet<FailuresResponse>("/admin/metrics/failures", q);
 }

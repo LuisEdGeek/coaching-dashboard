@@ -10,6 +10,22 @@ import {
 
 type Props = { range: DateRangeQuery };
 
+type RuleFilter = "all" | "A" | "B" | "flag_only";
+
+function catalogMatchesRule(action: string, filter: RuleFilter): boolean {
+  if (filter === "all") return true;
+  const a = action.toUpperCase();
+  if (filter === "A") return a.includes("RULE_A") || a === "A";
+  if (filter === "B") return a.includes("RULE_B") || a === "B";
+  return a.includes("FLAG") && !a.includes("RULE_A") && !a.includes("RULE_B");
+}
+
+function ruleFilterLabel(filter: RuleFilter): string {
+  if (filter === "all") return "all rules";
+  if (filter === "flag_only") return "flag only";
+  return `Rule ${filter}`;
+}
+
 export function FlaggedPanel({ range }: Props) {
   const [events, setEvents] = useState<FlaggedEvent[]>([]);
   const [catalog, setCatalog] = useState<GuardrailsCatalog | null>(null);
@@ -17,7 +33,7 @@ export function FlaggedPanel({ range }: Props) {
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<"all" | "input" | "output">("all");
-  const [ruleFilter, setRuleFilter] = useState<"all" | "A" | "B" | "flag_only">("all");
+  const [ruleFilter, setRuleFilter] = useState<RuleFilter>("all");
   const [openCatalogId, setOpenCatalogId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,10 +71,17 @@ export function FlaggedPanel({ range }: Props) {
     return layers
       .map((layer) => ({
         layer,
-        categories: catalog.categories.filter((c) => c.layer === layer),
+        categories: catalog.categories.filter(
+          (c) => c.layer === layer && catalogMatchesRule(c.action, ruleFilter),
+        ),
       }))
       .filter((g) => g.categories.length > 0);
-  }, [catalog]);
+  }, [catalog, ruleFilter]);
+
+  const catalogVisibleCount = useMemo(
+    () => groupedCatalog.reduce((n, g) => n + g.categories.length, 0),
+    [groupedCatalog],
+  );
 
   return (
     <section className="ops-panel">
@@ -96,7 +119,7 @@ export function FlaggedPanel({ range }: Props) {
             className={ruleFilter === r ? "is-active" : undefined}
             onClick={() => setRuleFilter(r)}
           >
-            {r === "all" ? "all rules" : r === "flag_only" ? "flag only" : `Rule ${r}`}
+            {ruleFilterLabel(r)}
           </button>
         ))}
       </div>
@@ -152,10 +175,18 @@ export function FlaggedPanel({ range }: Props) {
         <h3>Guardrail catalog</h3>
         <p>
           {catalog
-            ? `${catalog.version} · ${catalog.categories.length} categories. Read-only — edit the JSON and redeploy to change rules.`
+            ? `${catalog.version} · ${catalogVisibleCount}${
+                ruleFilter !== "all" ? ` of ${catalog.categories.length}` : ""
+              } categories${
+                ruleFilter !== "all" ? ` (${ruleFilterLabel(ruleFilter)})` : ""
+              }. Read-only — edit the JSON and redeploy to change rules.`
             : "Catalog unavailable (LLM proxy not configured)."}
         </p>
       </header>
+
+      {!catalog ? null : catalogVisibleCount === 0 ? (
+        <p className="muted">No catalog categories match this rule filter.</p>
+      ) : null}
 
       {groupedCatalog.map((group) => (
         <div key={group.layer} className="catalog-layer">
