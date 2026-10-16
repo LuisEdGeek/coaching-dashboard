@@ -5,6 +5,7 @@ import {
   type FunnelResponse,
   type FunnelStageKey,
 } from "../metrics/api";
+import { HorizontalBarChart } from "./HorizontalBarChart";
 
 type Props = {
   range: DateRangeQuery;
@@ -43,13 +44,24 @@ export function BetaFunnelPanel({ range }: Props) {
     };
   }, [range.days, range.from, range.to, range.include_test]);
 
+  const rows =
+    data?.stages.map((stage) => ({
+      key: stage.key,
+      label: STAGE_LABELS[stage.key],
+      count: stage.count,
+      detail:
+        stage.key === "invited" ? undefined : `${stage.pct_of_previous.toFixed(1)}% of previous`,
+    })) ?? [];
+
+  const scaleMax = Math.max(...rows.map((r) => r.count), 1);
+
   return (
     <section className="ops-panel">
       <header className="ops-panel__head">
         <h2>Beta lifecycle funnel</h2>
         <p>
-          Stage counts in the selected range. Each % is relative to the previous stage (first stage
-          is 100%).
+          Sign-up path in the selected range. Bars are absolute counts; the note under each stage is
+          % of the previous stage.
           {data ? (
             <>
               {" "}
@@ -67,19 +79,11 @@ export function BetaFunnelPanel({ range }: Props) {
       {loading ? <p>Loading…</p> : null}
 
       {!loading && data ? (
-        <div className="health__stats funnel-stats" role="list">
-          {data.stages.map((stage) => (
-            <div key={stage.key} className="health__stat" role="listitem">
-              <strong>{stage.count.toLocaleString()}</strong>
-              <span>{STAGE_LABELS[stage.key]}</span>
-              <em className="funnel-stats__pct">
-                {stage.key === "invited"
-                  ? "—"
-                  : `${stage.pct_of_previous.toFixed(1)}% of prev`}
-              </em>
-            </div>
-          ))}
-        </div>
+        <HorizontalBarChart
+          rows={rows}
+          scaleMax={scaleMax}
+          ariaLabel="Beta lifecycle funnel bar chart"
+        />
       ) : null}
     </section>
   );
