@@ -5,6 +5,10 @@ import { GapsPanel } from "./GapsPanel";
 import { HealthSummary } from "./HealthSummary";
 import { RagPanel } from "./RagPanel";
 import { UsersPanel } from "./UsersPanel";
+import { BetaFunnelPanel } from "./BetaFunnelPanel";
+import { CoachingProgressionPanel } from "./CoachingProgressionPanel";
+import { CoacheesPanel } from "./CoacheesPanel";
+import { FailuresPanel } from "./FailuresPanel";
 import { CATEGORY_ORDER, P0_METRICS } from "../metrics/catalog";
 import {
   clearSession,
@@ -19,14 +23,15 @@ type Props = {
 };
 
 type LoadState = "loading" | "ready" | "error";
-type Tab = "kpis" | "rag" | "flagged" | "users";
+type Tab = "kpis" | "beta" | "rag" | "flagged" | "users";
 
-const PRESETS = [
+const PRESETS: ReadonlyArray<{ label: string; days: number | null }> = [
+  { label: "All", days: null },
   { label: "7d", days: 7 },
   { label: "14d", days: 14 },
   { label: "30d", days: 30 },
   { label: "90d", days: 90 },
-] as const;
+];
 
 /** HTML date `YYYY-MM-DD` → start/end of that local calendar day (ISO). */
 function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
@@ -42,7 +47,7 @@ export function DashboardPage({ onLogout }: Props) {
   const [tab, setTab] = useState<Tab>(() => {
     try {
       const t = new URLSearchParams(window.location.search).get("tab");
-      if (t === "flagged" || t === "rag" || t === "users" || t === "kpis") return t;
+      if (t === "flagged" || t === "rag" || t === "users" || t === "kpis" || t === "beta") return t;
     } catch {
       /* ignore */
     }
@@ -50,21 +55,43 @@ export function DashboardPage({ onLogout }: Props) {
   });
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
-  /** Committed range — presets and From/To commit as soon as both dates are valid. */
-  const [range, setRange] = useState<DateRangeQuery>({ days: 7 });
+  /**
+   * Committed range. Empty = whole Beta for funnel/progression;
+   * overview handlers still default to 7d when days omitted.
+   */
+  const [range, setRange] = useState<DateRangeQuery>({});
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [filter, setFilter] = useState<"all" | "critical" | "high" | "medium">("all");
   const [reloadKey, setReloadKey] = useState(0);
+  const [betaIncludeTest, setBetaIncludeTest] = useState(false);
+  const [betaStuck, setBetaStuck] = useState(false);
+  const [betaReloadKey, setBetaReloadKey] = useState(0);
   const [userQueryInput, setUserQueryInput] = useState("");
   const [userQuery, setUserQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserLabel, setSelectedUserLabel] = useState<string | null>(null);
 
   const activePresetDays = range.days ?? null;
-  const showDateFilters = tab === "kpis" || tab === "flagged" || tab === "users";
+  const showDateFilters = tab === "kpis" || tab === "beta" || tab === "flagged" || tab === "users";
   const showUserFilters = tab === "kpis" || tab === "flagged" || tab === "users";
+
+  const betaRange: DateRangeQuery = useMemo(
+    () => ({
+      ...range,
+      ...(betaIncludeTest ? { include_test: true } : {}),
+    }),
+    [range, betaIncludeTest],
+  );
+
+  const coacheesQuery = useMemo(
+    () => ({
+      ...(betaIncludeTest ? { include_test: true } : {}),
+      ...(betaStuck ? { stuck: true } : {}),
+    }),
+    [betaIncludeTest, betaStuck],
+  );
 
   const opsRange: DateRangeQuery = useMemo(
     () => ({
@@ -109,10 +136,10 @@ export function DashboardPage({ onLogout }: Props) {
     return load();
   }, [load, reloadKey, tab]);
 
-  function applyPreset(days: number) {
+  function applyPreset(days: number | null) {
     setFromInput("");
     setToInput("");
-    setRange({ days });
+    setRange(days == null ? {} : { days });
   }
 
   function commitCustomDates(from: string, to: string) {
@@ -162,6 +189,7 @@ export function DashboardPage({ onLogout }: Props) {
 
   function handleRetry() {
     setReloadKey((k) => k + 1);
+    setBetaReloadKey((k) => k + 1);
   }
 
   const loading = loadState === "loading" && tab === "kpis";
@@ -182,9 +210,11 @@ export function DashboardPage({ onLogout }: Props) {
               ? loading
                 ? "Loading live scorecard…"
                 : rangeDisplay
-              : tab === "rag"
-                ? "Coaching chat and product FAQ are separate knowledge bases"
-                : "Ops panels"}
+              : tab === "beta"
+                ? "Beta lifecycle funnel, coachees, and AI failure ops"
+                : tab === "rag"
+                  ? "Coaching chat and product FAQ are separate knowledge bases"
+                  : "Ops panels"}
             {" · live API"}
             {tab === "kpis" && criticalAlerts > 0 ? ` · ${criticalAlerts} critical alerts` : ""}
           </p>
@@ -203,6 +233,7 @@ export function DashboardPage({ onLogout }: Props) {
         {(
           [
             ["kpis", "KPIs"],
+            ["beta", "Beta"],
             ["rag", "Knowledge"],
             ["flagged", "Flagged"],
             ["users", "Users"],
@@ -247,10 +278,14 @@ export function DashboardPage({ onLogout }: Props) {
             <>
               <div className="filter-row" role="group" aria-label="Range presets">
                 {PRESETS.map((p) => {
-                  const active = !range.from && activePresetDays === p.days;
+                  const active =
+                    !range.from &&
+                    (p.days == null
+                      ? activePresetDays == null
+                      : activePresetDays === p.days);
                   return (
                     <button
-                      key={p.days}
+                      key={p.label}
                       type="button"
                       aria-pressed={active}
                       className={active ? "is-active" : undefined}
@@ -380,6 +415,24 @@ export function DashboardPage({ onLogout }: Props) {
               {" · click a card with data to expand its chart"}
             </p>
           </footer>
+        </>
+      ) : null}
+
+      {tab === "beta" ? (
+        <>
+          <BetaFunnelPanel key={`funnel-${betaReloadKey}`} range={betaRange} />
+          <CoachingProgressionPanel
+            key={`progression-${betaReloadKey}`}
+            range={betaRange}
+          />
+          <CoacheesPanel
+            query={coacheesQuery}
+            onQueryChange={(patch) => {
+              if (patch.include_test != null) setBetaIncludeTest(patch.include_test);
+              if (patch.stuck != null) setBetaStuck(patch.stuck);
+            }}
+          />
+          <FailuresPanel range={range} />
         </>
       ) : null}
 

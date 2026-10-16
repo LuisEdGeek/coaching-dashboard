@@ -911,6 +911,12 @@ button.ghost:disabled {
   color: var(--ink-soft);
 }
 
+.ops-panel__cohort {
+  margin: -8px 0 16px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
 .ops-rag-count {
   font-family: var(--font-body, inherit);
   font-size: 0.85rem;
@@ -991,6 +997,117 @@ button.ghost:disabled {
 
 .muted {
   color: var(--muted);
+}
+
+.hbar-chart {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px 8px;
+  color: var(--ink);
+}
+
+.hbar-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 720px;
+}
+
+.hbar-chart__grid {
+  stroke: rgba(28, 26, 34, 0.12);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.hbar-chart__tick {
+  fill: var(--muted);
+  font-size: 10px;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__label {
+  fill: var(--ink);
+  font-size: 11px;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__bar {
+  fill: #4a7fd4;
+}
+
+.hbar-chart__value {
+  fill: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-body, system-ui, sans-serif);
+}
+
+.hbar-chart__details {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.hbar-chart__details li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.hbar-chart__details em {
+  font-style: normal;
+  color: var(--ink-soft);
+}
+
+.filter-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.th-sort {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.failures-sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.failures-sessions h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.failures-sessions__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 0.82rem;
+}
+
+.failures-sessions__list li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .flag-list {
