@@ -265,11 +265,14 @@ export type FunnelResponse = {
   from: string;
   to: string;
   include_test: boolean;
+  whole_beta?: boolean;
+  cohort_line?: string;
   stages: FunnelStageRow[];
   generated_at: string;
 };
 
-export async function fetchFunnel(q: DateRangeQuery = { days: 7 }): Promise<FunnelResponse> {
+/** Omit days/from/to → backend uses whole Beta cohort. */
+export async function fetchFunnel(q: DateRangeQuery = {}): Promise<FunnelResponse> {
   return adminGet<FunnelResponse>("/admin/metrics/funnel", q);
 }
 
@@ -285,14 +288,17 @@ export type CoachingProgressionResponse = {
   from: string;
   to: string;
   include_test: boolean;
+  whole_beta?: boolean;
+  cohort_line?: string;
   registered: number;
   scale_max: number;
   milestones: Array<{ key: CoachingProgressionKey; count: number }>;
   generated_at: string;
 };
 
+/** Omit days/from/to → backend uses whole Beta cohort. */
 export async function fetchCoachingProgression(
-  q: DateRangeQuery = { days: 7 },
+  q: DateRangeQuery = {},
 ): Promise<CoachingProgressionResponse> {
   return adminGet<CoachingProgressionResponse>("/admin/metrics/coaching-progression", q);
 }

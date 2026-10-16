@@ -911,6 +911,12 @@ button.ghost:disabled {
   color: var(--ink-soft);
 }
 
+.ops-panel__cohort {
+  margin: -8px 0 16px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
 .ops-rag-count {
   font-family: var(--font-body, inherit);
   font-size: 0.85rem;
