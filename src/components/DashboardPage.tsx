@@ -25,12 +25,13 @@ type Props = {
 type LoadState = "loading" | "ready" | "error";
 type Tab = "kpis" | "beta" | "rag" | "flagged" | "users";
 
-const PRESETS = [
+const PRESETS: ReadonlyArray<{ label: string; days: number | null }> = [
+  { label: "All", days: null },
   { label: "7d", days: 7 },
   { label: "14d", days: 14 },
   { label: "30d", days: 30 },
   { label: "90d", days: 90 },
-] as const;
+];
 
 /** HTML date `YYYY-MM-DD` → start/end of that local calendar day (ISO). */
 function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
@@ -54,8 +55,11 @@ export function DashboardPage({ onLogout }: Props) {
   });
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
-  /** Committed range — presets and From/To commit as soon as both dates are valid. */
-  const [range, setRange] = useState<DateRangeQuery>({ days: 7 });
+  /**
+   * Committed range. Empty = whole Beta for funnel/progression;
+   * overview handlers still default to 7d when days omitted.
+   */
+  const [range, setRange] = useState<DateRangeQuery>({});
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -132,10 +136,10 @@ export function DashboardPage({ onLogout }: Props) {
     return load();
   }, [load, reloadKey, tab]);
 
-  function applyPreset(days: number) {
+  function applyPreset(days: number | null) {
     setFromInput("");
     setToInput("");
-    setRange({ days });
+    setRange(days == null ? {} : { days });
   }
 
   function commitCustomDates(from: string, to: string) {
@@ -274,10 +278,14 @@ export function DashboardPage({ onLogout }: Props) {
             <>
               <div className="filter-row" role="group" aria-label="Range presets">
                 {PRESETS.map((p) => {
-                  const active = !range.from && activePresetDays === p.days;
+                  const active =
+                    !range.from &&
+                    (p.days == null
+                      ? activePresetDays == null
+                      : activePresetDays === p.days);
                   return (
                     <button
-                      key={p.days}
+                      key={p.label}
                       type="button"
                       aria-pressed={active}
                       className={active ? "is-active" : undefined}

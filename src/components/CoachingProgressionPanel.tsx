@@ -58,8 +58,9 @@ export function CoachingProgressionPanel({ range }: Props) {
       <header className="ops-panel__head">
         <h2>Beta coaching progression</h2>
         <p>
-          Cumulative Heart → Spark → Pulse milestones in range
-          {data ? ` · ${data.registered.toLocaleString()} registered` : null}.
+          Same cohort as the funnel. Heart / Spark / Pulse = ever reached
+          (number_* &gt; 0). Journey completed = journey.status completed — not
+          just having all three stages.
           {data ? (
             <>
               {" "}
@@ -67,6 +68,7 @@ export function CoachingProgressionPanel({ range }: Props) {
             </>
           ) : null}
         </p>
+        {data?.cohort_line ? <p className="ops-panel__cohort">{data.cohort_line}</p> : null}
       </header>
 
       {error ? (

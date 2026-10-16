@@ -61,8 +61,8 @@ export function BetaFunnelPanel({ range }: Props) {
       <header className="ops-panel__head">
         <h2>Beta lifecycle funnel</h2>
         <p>
-          Sign-up path in the selected range. Bars are absolute counts; the note under each stage is
-          % of the previous stage.
+          Same registration cohort; each bar is how many of that cohort ever reached
+          the stage (cumulative). Notes under bars are % of the previous stage.
           {data ? (
             <>
               {" "}
@@ -70,6 +70,7 @@ export function BetaFunnelPanel({ range }: Props) {
             </>
           ) : null}
         </p>
+        {data?.cohort_line ? <p className="ops-panel__cohort">{data.cohort_line}</p> : null}
       </header>
 
       {error ? (
