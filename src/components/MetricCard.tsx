@@ -86,7 +86,7 @@ export function MetricCard({ metric, value, loading = false }: Props) {
           </p>
         ) : null}
         {canExpand ? (
-          <p className="metric-card__chart-hint">{open ? "Ocultar detalle" : "Ver detalle"}</p>
+          <p className="metric-card__chart-hint">{open ? "Hide detail" : "Show detail"}</p>
         ) : null}
       </button>
       {open ? (
@@ -96,7 +96,7 @@ export function MetricCard({ metric, value, loading = false }: Props) {
             <LineChart series={value.series} />
           ) : (
             <p className="chart-empty">
-              Aún no hay línea día a día en este rango — el número de arriba sí se actualiza cuando llegan eventos.
+              No day-by-day line in this range yet. The number above still updates when events arrive.
             </p>
           )}
         </div>
