@@ -14,7 +14,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Monitoring / Moderation Logs",
     status: "live",
     howItWorks:
-      "Cuando el coach o el usuario disparan una alerta de seguridad, el evento se guarda y aparece aquí. Esta tarjeta cuenta esos flags en el periodo.",
+      "When the coach or the user raises a safety flag, we store the event and show it here. This card counts those flags in the selected period.",
   },
   {
     id: "app_crashes",
@@ -28,7 +28,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "blocked",
     gap: "No Crashlytics / Sentry in Flutter yet. Add SDK + DSN, then this card goes live.",
     howItWorks:
-      "Cada vez que la app se cierra sola en el teléfono de alguien, lo registramos. Aquí ves cuántos crashes hubo frente a cuánta gente estaba activa.",
+      "Each time the app closes on its own on someone's phone, we record it. Here you see how many crashes there were against how many people were active.",
   },
   {
     id: "ai_latency",
@@ -41,7 +41,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Monitoring",
     status: "live",
     howItWorks:
-      "Cada vez que el coach contesta, medimos el turno completo y, aparte, la capa de pensamiento (approver). La tarjeta es el tiempo típico de espera; debajo ves cuánto de eso es esa segunda llamada.",
+      "Each time the coach replies, we measure the full turn and, separately, the thought layer (approver). The card is the typical wait; below that you see how much of it is that second call.",
   },
   {
     id: "ai_total_tokens",
@@ -54,7 +54,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "LLM ai_usage_logs",
     status: "live",
     howItWorks:
-      "Sumamos todos los tokens de las llamadas de IA (coach, classifier, approver, embeddings, etc.) en el rango de fechas del dashboard. El mismo From/To o preset (7d/30d/…) que el resto de KPIs.",
+      "We add up every token from AI calls (coach, classifier, approver, embeddings, and the rest) in the dashboard date range. Same From/To or preset (7d/30d/…) as the other KPIs.",
   },
   {
     id: "ai_total_cost_usd",
@@ -67,7 +67,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "LLM ai_usage_logs",
     status: "live",
     howItWorks:
-      "Sumamos el costo estimado en dólares de esas mismas llamadas de IA en el rango filtrado. Cambia el preset o From/To y este número se recalcula con el mismo filtro que Latency y el resto.",
+      "We add up the estimated dollar cost of those same AI calls in the filtered range. Change the preset or From/To and this number recalculates with the same filter as Latency and the rest.",
   },
   {
     id: "payment_failure_rate",
@@ -81,7 +81,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "payment_error_log + Stripe webhooks in coaching-app-back. Need success denominator + admin rate endpoint.",
     howItWorks:
-      "Si alguien intenta pagar o renovar y el pago no pasa, lo contamos como fallo. La tasa es fallos entre todos los intentos de pago.",
+      "If someone tries to pay or renew and the payment does not go through, we count it as a failure. The rate is failures divided by all payment attempts.",
   },
   {
     id: "safeguarding_escalations",
@@ -95,7 +95,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "safety.triggered can webhook; no durable escalation table or admin list yet.",
     howItWorks:
-      "Cuando una conversación se ve lo bastante delicada como para que una persona la revise, levantamos una alerta y la contamos aquí.",
+      "When a conversation looks serious enough that a person should review it, we raise an alert and count it here.",
   },
 
   // —— High ——
@@ -111,7 +111,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "initial_form_response + profile.onboardingStep in back. Need funnel aggregate API.",
     howItWorks:
-      "Contamos a quiénes terminan los pasos de configuración frente a quiénes solo los empezaron. El porcentaje es cuántos llegan al final.",
+      "We count people who finish the setup steps against people who only started them. The percentage is how many reach the end.",
   },
   {
     id: "first_session_completion",
@@ -125,7 +125,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "test_sessions + session.completed sync. Need first-session KPI definition + endpoint.",
     howItWorks:
-      "De todos los que empiezan su primer chat de coaching, contamos cuántos sí terminan esa sesión.",
+      "Of everyone who starts their first coaching chat, we count how many finish that session.",
   },
   {
     id: "full_journey_completion",
@@ -139,7 +139,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "Journey status model incomplete on back (mostly new→active). Need clear journey_completed signal.",
     howItWorks:
-      "Vemos si alguien termina todo el camino de coaching que empezó, no solo un chat suelto.",
+      "We check whether someone finishes the whole coaching path they started, not just a single chat.",
   },
   {
     id: "dropoff_by_stage",
@@ -153,7 +153,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "Stage/substep on sessions exists. Need session.turn + abandonment definition + funnel chart API.",
     howItWorks:
-      "Mientras la gente avanza en el journey, anotamos dónde se detiene. Así ves en qué etapas se cae más gente.",
+      "As people move through the journey, we note where they stop. That shows which stages lose the most people.",
   },
   {
     id: "session_abandonment",
@@ -166,7 +166,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Analytics",
     status: "live",
     howItWorks:
-      "Si alguien empieza a platicar con el coach y nunca termina esa sesión, la contamos como abandonada.",
+      "If someone starts talking with the coach and never finishes that session, we count it as abandoned.",
   },
   {
     id: "sessions_per_user",
@@ -180,7 +180,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "Derivable from test_sessions / ai_sync_event. Need aggregate + resume-safe counting.",
     howItWorks:
-      "Entre la gente activa, promediamos cuántas sesiones de coaching ha hecho cada persona.",
+      "Among active people, we average how many coaching sessions each person has done.",
   },
   {
     id: "return_d1_d7",
@@ -193,7 +193,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Analytics",
     status: "live",
     howItWorks:
-      "Después del primer día de alguien en la app, checamos si volvió al día siguiente y otra vez dentro de la semana.",
+      "After someone's first day in the app, we check whether they came back the next day and again within the week.",
   },
   {
     id: "repeat_sessions",
@@ -207,7 +207,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "sessionNumber on test_sessions. Need KPI endpoint.",
     howItWorks:
-      "Contamos a quienes terminan más de una sesión de coaching: señal sencilla de que están regresando.",
+      "We count people who finish more than one coaching session: a simple sign they are coming back.",
   },
   {
     id: "ai_thumbs",
@@ -220,7 +220,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "In-App Feedback / ops_event",
     status: "live",
     howItWorks:
-      "Cuando alguien pone pulgar arriba o abajo en una respuesta del coach, guardamos ese voto y aquí ves los totales.",
+      "When someone taps thumbs up or down on a coach reply, we store that vote and show the totals here.",
   },
   {
     id: "did_this_help",
@@ -234,7 +234,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "POST /journey/:id/session-feedback exists on back; Flutter submitSessionFeedback is not called. Wire UI + aggregate.",
     howItWorks:
-      "Al terminar una sesión, la persona puede poner estrellas de qué tanto le ayudó. Esas calificaciones alimentan esta tarjeta.",
+      "At the end of a session, the person can leave stars for how much it helped. Those ratings feed this card.",
   },
   {
     id: "broken_repetitive",
@@ -247,7 +247,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "In-App Feedback / Internal Review",
     status: "live",
     howItWorks:
-      "A veces la respuesta del coach llega enredada y hay que limpiarla. Cada limpieza se cuenta aquí.",
+      "Sometimes a coach reply comes out tangled and has to be cleaned up. Each cleanup is counted here.",
   },
   {
     id: "confusion_points",
@@ -260,7 +260,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Analytics + Survey",
     status: "live",
     howItWorks:
-      "Si una respuesta del coach tarda más de 15 segundos, la tratamos como un momento de fricción y la contamos.",
+      "If a coach reply takes more than 15 seconds, we treat it as a moment of friction and count it.",
   },
   {
     id: "ux_themes",
@@ -274,7 +274,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "Clarity replays only. Need open-text store + tagging (manual or LLM).",
     howItWorks:
-      "Todavía falta un lugar en la app para comentarios abiertos y etiquetar temas. Mientras tanto, esta tarjeta no tiene números reales.",
+      "The app still has no place for open comments and theme tags. Until that exists, this card has no real numbers.",
   },
   {
     id: "login_failures",
@@ -288,7 +288,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "API returns invalid_credentials; no login_attempt audit table. Add append-only log.",
     howItWorks:
-      "Cada vez que alguien intenta entrar y falla, lo contamos. Sirve para ver si el acceso se está trabando.",
+      "Each time someone tries to sign in and fails, we count it. That shows whether access is getting stuck.",
   },
   {
     id: "uptime",
@@ -301,7 +301,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "Infrastructure Monitoring",
     status: "live",
     howItWorks:
-      "Coolify (Uptime Kuma) patea cada minuto el API, el LLM, el dashboard, el playground y el checkout. Esta tarjeta es el promedio de cuánto tiempo contestaron bien en las últimas 24 horas.",
+      "Coolify (Uptime Kuma) checks the API, the LLM, the dashboard, the playground, and checkout every minute. This card is how much of the last 24 hours they answered successfully.",
   },
   {
     id: "would_use_again",
@@ -315,7 +315,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "blocked",
     gap: "Only in handoff stubs (wouldReturn). Ship prompt in app.",
     howItWorks:
-      "Todavía falta una preguntita en la app de “¿volverías a usarlo?”. Hasta que salga, no hay número real aquí.",
+      "The app still has no “would you use this again?” prompt. Until it ships, there is no real number here.",
   },
   {
     id: "perceived_value",
@@ -329,7 +329,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "blocked",
     gap: "No survey field / event yet.",
     howItWorks:
-      "Todavía falta una encuesta en la app sobre si sienten que vale la pena. Por ahora no se recoge nada para esta tarjeta.",
+      "The app still has no survey on whether the experience feels worth it. Nothing is collected for this card yet.",
   },
   {
     id: "questionnaire_feedback",
@@ -343,7 +343,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "initial_form_* stores pre-coaching answers. Need admin browse + post-session questionnaires if distinct.",
     howItWorks:
-      "Juntamos las respuestas de cuestionarios dentro del producto (como el formulario inicial) para leer qué dijo la gente.",
+      "We gather answers from in-product questionnaires (such as the initial form) so you can read what people said.",
   },
 
   // —— Medium ——
@@ -359,7 +359,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "user.createdAt in Better Auth. Need admin count by range.",
     howItWorks:
-      "Cada registro terminado cuenta como un alta. Esta tarjeta es simplemente cuántas cuentas nuevas llegaron en el periodo.",
+      "Each finished registration counts as a sign-up. This card is how many new accounts arrived in the period.",
   },
   {
     id: "verification_success",
@@ -373,7 +373,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "emailVerified on user. Attempt count needs verification send/fail log.",
     howItWorks:
-      "Comparamos a quiénes terminan de verificar su cuenta con quiénes lo intentaron. La tasa muestra qué tan seguido funciona.",
+      "We compare people who finish verifying their account with people who tried. The rate shows how often it works.",
   },
   {
     id: "time_to_first_session",
@@ -387,7 +387,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "Join user.createdAt × first session. Need aggregate API.",
     howItWorks:
-      "Desde que alguien se registra, medimos cuánto tarda en empezar su primera sesión de coaching.",
+      "From the moment someone registers, we measure how long they take to start their first coaching session.",
   },
   {
     id: "avg_session_length",
@@ -400,7 +400,7 @@ export const P0_METRICS: MetricDefinition[] = [
     source: "App Analytics",
     status: "live",
     howItWorks:
-      "En las sesiones con varios turnos, medimos del primer mensaje al último y mostramos el promedio de duración.",
+      "In sessions with several turns, we measure from the first message to the last and show the average length.",
   },
   {
     id: "support_requests",
@@ -414,7 +414,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "sql_ready",
     gap: "support table exists (shell). Count OK; message content still thin.",
     howItWorks:
-      "Cuando alguien abre un ticket o pide ayuda por el canal del producto, lo contamos aquí.",
+      "When someone opens a ticket or asks for help through the product channel, we count it here.",
   },
   {
     id: "willingness_to_pay",
@@ -428,7 +428,7 @@ export const P0_METRICS: MetricDefinition[] = [
     status: "partial",
     gap: "No WTP survey question. Stripe subscription status can proxy conversion only.",
     howItWorks:
-      "Lo ideal es una encuesta de precio; por ahora las suscripciones pagadas son solo una pista aproximada hasta que preguntemos directo.",
+      "A pricing survey is the real measure. For now, paid subscriptions are only a rough signal until we ask directly.",
   },
 ];
 
