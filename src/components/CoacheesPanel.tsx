@@ -13,7 +13,7 @@ type Props = {
 };
 
 type SortKey =
-  | "id"
+  | "email"
   | "registered"
   | "verified"
   | "onboarding"
@@ -27,6 +27,11 @@ function cmpBool(a: boolean, b: boolean): number {
 
 function cmpStr(a: string | null, b: string | null): number {
   return (a ?? "").localeCompare(b ?? "");
+}
+
+function displayEmail(row: CoacheeRow): string {
+  const email = (row.email ?? "").trim();
+  return email || row.id;
 }
 
 export function CoacheesPanel({ query, onQueryChange }: Props) {
@@ -63,8 +68,8 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
     list.sort((a, b) => {
       let c = 0;
       switch (sortKey) {
-        case "id":
-          c = a.id.localeCompare(b.id);
+        case "email":
+          c = displayEmail(a).localeCompare(displayEmail(b));
           break;
         case "registered":
           c = cmpBool(a.registered, b.registered);
@@ -95,7 +100,7 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
-      setSortDir(key === "id" || key === "stage" ? "asc" : "desc");
+      setSortDir(key === "email" || key === "stage" ? "asc" : "desc");
     }
   }
 
@@ -143,7 +148,7 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
       <header className="ops-panel__head">
         <h2>Coachees</h2>
         <p>
-          Internal user IDs only (no emails). Stuck = no session activity in 7 days.
+          Stuck = no session activity in 7 days.
           {generatedAt ? (
             <>
               {" "}
@@ -189,8 +194,8 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
             <thead>
               <tr>
                 <th>
-                  <button type="button" className="th-sort" onClick={() => toggleSort("id")}>
-                    ID{sortIndicator("id")}
+                  <button type="button" className="th-sort" onClick={() => toggleSort("email")}>
+                    Email{sortIndicator("email")}
                   </button>
                 </th>
                 <th>
@@ -236,9 +241,7 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
             <tbody>
               {sorted.map((row) => (
                 <tr key={row.id}>
-                  <td>
-                    <code>{row.id}</code>
-                  </td>
+                  <td>{displayEmail(row)}</td>
                   <td>{row.registered ? "yes" : "no"}</td>
                   <td>{row.verified ? "yes" : "no"}</td>
                   <td>{row.onboarding ? "yes" : "no"}</td>
