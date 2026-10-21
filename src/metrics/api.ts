@@ -313,6 +313,7 @@ export type CoacheeStage =
 
 export type CoacheeRow = {
   id: string;
+  email?: string;
   registered: boolean;
   verified: boolean;
   onboarding: boolean;
