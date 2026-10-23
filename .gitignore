@@ -13,6 +13,8 @@ dist-ssr
 *.local
 .env
 .env.*.local
+.impeccable/
+.impeccable-evidence/
 
 # Editor directories and files
 .vscode/*
