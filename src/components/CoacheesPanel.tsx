@@ -8,8 +8,8 @@ import {
 } from "../metrics/api";
 
 type Props = {
-  query: Pick<DateRangeQuery, "include_test" | "stuck">;
-  onQueryChange: (patch: Partial<Pick<DateRangeQuery, "include_test" | "stuck">>) => void;
+  query: Pick<DateRangeQuery, "stuck">;
+  onQueryChange: (patch: Partial<Pick<DateRangeQuery, "stuck">>) => void;
 };
 
 type SortKey =
@@ -56,7 +56,7 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
         setError(e instanceof Error ? e.message : "Failed to load coachees");
       })
       .finally(() => setLoading(false));
-  }, [query.include_test, query.stuck]);
+  }, [query.stuck]);
 
   useEffect(() => {
     void load();
@@ -159,14 +159,6 @@ export function CoacheesPanel({ query, onQueryChange }: Props) {
       </header>
 
       <div className="filter-row" role="group" aria-label="Coachee filters">
-        <label className="filter-check">
-          <input
-            type="checkbox"
-            checked={Boolean(query.include_test)}
-            onChange={(e) => onQueryChange({ include_test: e.target.checked })}
-          />
-          Include test accounts
-        </label>
         <label className="filter-check">
           <input
             type="checkbox"

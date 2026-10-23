@@ -18,8 +18,6 @@ export type DateRangeQuery = {
   /** Email / name / id search */
   q?: string;
   userId?: string;
-  /** Include QA / demo accounts in beta KPIs (default false). */
-  include_test?: boolean;
   /** Coachees only: no session.turn in the last 7 days. */
   stuck?: boolean;
 };
@@ -48,7 +46,6 @@ function rangeQuery(q: DateRangeQuery): string {
   if (q.days != null && !q.from) params.set("days", String(q.days));
   if (q.q) params.set("q", q.q);
   if (q.userId) params.set("userId", q.userId);
-  if (q.include_test) params.set("include_test", "true");
   if (q.stuck) params.set("stuck", "true");
   const s = params.toString();
   return s ? `?${s}` : "";
@@ -330,7 +327,7 @@ export type CoacheesResponse = {
 };
 
 export async function fetchCoachees(
-  q: Pick<DateRangeQuery, "include_test" | "stuck"> = {},
+  q: Pick<DateRangeQuery, "stuck"> = {},
 ): Promise<CoacheesResponse> {
   return adminGet<CoacheesResponse>("/admin/coachees", q);
 }
@@ -362,7 +359,7 @@ export async function patchCoacheeTestAccount(
 }
 
 export async function downloadCoacheesCsv(
-  q: Pick<DateRangeQuery, "include_test" | "stuck"> = {},
+  q: Pick<DateRangeQuery, "stuck"> = {},
 ): Promise<Blob> {
   const token = getStoredToken();
   if (!token || !API_BASE) throw new Error("Not signed in");
