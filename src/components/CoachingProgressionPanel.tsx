@@ -44,7 +44,7 @@ export function CoachingProgressionPanel({ range }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [range.days, range.from, range.to, range.include_test]);
+  }, [range.days, range.from, range.to]);
 
   const rows =
     data?.milestones.map((m) => ({

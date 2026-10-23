@@ -65,7 +65,6 @@ export function DashboardPage({ onLogout }: Props) {
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [filter, setFilter] = useState<"all" | "critical" | "high" | "medium">("all");
   const [reloadKey, setReloadKey] = useState(0);
-  const [betaIncludeTest, setBetaIncludeTest] = useState(false);
   const [betaStuck, setBetaStuck] = useState(false);
   const [betaReloadKey, setBetaReloadKey] = useState(0);
   const [userQueryInput, setUserQueryInput] = useState("");
@@ -77,20 +76,13 @@ export function DashboardPage({ onLogout }: Props) {
   const showDateFilters = tab === "kpis" || tab === "beta" || tab === "flagged" || tab === "users";
   const showUserFilters = tab === "kpis" || tab === "flagged" || tab === "users";
 
-  const betaRange: DateRangeQuery = useMemo(
-    () => ({
-      ...range,
-      ...(betaIncludeTest ? { include_test: true } : {}),
-    }),
-    [range, betaIncludeTest],
-  );
+  const betaRange: DateRangeQuery = useMemo(() => ({ ...range }), [range]);
 
   const coacheesQuery = useMemo(
     () => ({
-      ...(betaIncludeTest ? { include_test: true } : {}),
       ...(betaStuck ? { stuck: true } : {}),
     }),
-    [betaIncludeTest, betaStuck],
+    [betaStuck],
   );
 
   const opsRange: DateRangeQuery = useMemo(
@@ -428,7 +420,6 @@ export function DashboardPage({ onLogout }: Props) {
           <CoacheesPanel
             query={coacheesQuery}
             onQueryChange={(patch) => {
-              if (patch.include_test != null) setBetaIncludeTest(patch.include_test);
               if (patch.stuck != null) setBetaStuck(patch.stuck);
             }}
           />
