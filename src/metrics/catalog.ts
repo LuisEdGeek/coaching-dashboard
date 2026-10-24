@@ -430,6 +430,45 @@ export const P0_METRICS: MetricDefinition[] = [
     howItWorks:
       "A pricing survey is the real measure. For now, paid subscriptions are only a rough signal until we ask directly.",
   },
+  {
+    id: "voice_vs_text",
+    name: "Voice vs Text",
+    category: "Engagement",
+    priority: "high",
+    kind: "quantitative",
+    question: "How do people talk to the coach?",
+    formula: "user messages by input_channel + ai_usage_logs cost by channel",
+    source: "LLM test_messages + ai_usage_logs",
+    status: "live",
+    howItWorks:
+      "Each user turn is tagged voice or text. The card counts those turns and the AI spend tagged the same way in the selected range. Test accounts are out.",
+  },
+  {
+    id: "emails_sent",
+    name: "Emails Sent",
+    category: "Operational Stability",
+    priority: "high",
+    kind: "quantitative",
+    question: "Are transactional emails going out?",
+    formula: "count(email_send) by type and ok",
+    source: "email_send",
+    status: "live",
+    howItWorks:
+      "Every Resend attempt writes a row (type, person, ok/fail, Resend id). The card is the count in range, split by type. No address or body is stored. Test accounts are out.",
+  },
+  {
+    id: "coach_loops",
+    name: "Coach Loops",
+    category: "AI Quality",
+    priority: "high",
+    kind: "quantitative",
+    question: "How often does the coach repeat itself?",
+    formula: "count(ops_event type=coach.loop) and distinct sessions",
+    source: "ops_event",
+    status: "live",
+    howItWorks:
+      "When coachLoopSafety fires, we store a coach.loop event. This card is how many times and in how many sessions, for real people, in the selected range.",
+  },
 ];
 
 export const CATEGORY_ORDER: MetricDefinition["category"][] = [
