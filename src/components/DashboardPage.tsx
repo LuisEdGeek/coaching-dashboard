@@ -24,14 +24,27 @@ type Props = {
 
 type LoadState = "loading" | "ready" | "error";
 type Tab = "kpis" | "beta" | "rag" | "flagged" | "users";
+type DatePreset =
+  | { label: "Today"; kind: "today" }
+  | { label: "All"; kind: "all" }
+  | { label: string; kind: "days"; days: number };
 
-const PRESETS: ReadonlyArray<{ label: string; days: number | null }> = [
-  { label: "All", days: null },
-  { label: "7d", days: 7 },
-  { label: "14d", days: 14 },
-  { label: "30d", days: 30 },
-  { label: "90d", days: 90 },
+const PRESETS: ReadonlyArray<DatePreset> = [
+  { label: "Today", kind: "today" },
+  { label: "All", kind: "all" },
+  { label: "7d", kind: "days", days: 7 },
+  { label: "14d", kind: "days", days: 14 },
+  { label: "30d", kind: "days", days: 30 },
+  { label: "90d", kind: "days", days: 90 },
 ];
+
+/** Local calendar day as `YYYY-MM-DD` for the date inputs. */
+function localYmd(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 /** HTML date `YYYY-MM-DD` → start/end of that local calendar day (ISO). */
 function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
@@ -41,6 +54,14 @@ function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
     ? new Date(y, m - 1, d, 23, 59, 59, 999)
     : new Date(y, m - 1, d, 0, 0, 0, 0);
   return dt.toISOString();
+}
+
+function todayRange(): DateRangeQuery {
+  const ymd = localYmd();
+  return {
+    from: dayBoundsIso(ymd, false),
+    to: dayBoundsIso(ymd, true),
+  };
 }
 
 export function DashboardPage({ onLogout }: Props) {
@@ -53,13 +74,13 @@ export function DashboardPage({ onLogout }: Props) {
     }
     return "kpis";
   });
-  const [fromInput, setFromInput] = useState("");
-  const [toInput, setToInput] = useState("");
+  const [fromInput, setFromInput] = useState(() => localYmd());
+  const [toInput, setToInput] = useState(() => localYmd());
   /**
-   * Committed range. Empty = whole Beta for funnel/progression;
-   * overview handlers still default to 7d when days omitted.
+   * Committed range. Default is the local calendar day (Today).
+   * Empty = whole Beta for funnel/progression; overview still defaults to 7d.
    */
-  const [range, setRange] = useState<DateRangeQuery>({});
+  const [range, setRange] = useState<DateRangeQuery>(() => todayRange());
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -73,6 +94,8 @@ export function DashboardPage({ onLogout }: Props) {
   const [selectedUserLabel, setSelectedUserLabel] = useState<string | null>(null);
 
   const activePresetDays = range.days ?? null;
+  const todayYmd = localYmd();
+  const todayActive = Boolean(range.from && fromInput === todayYmd && toInput === todayYmd);
   const showDateFilters = tab === "kpis" || tab === "beta" || tab === "flagged" || tab === "users";
   const showUserFilters = tab === "kpis" || tab === "flagged" || tab === "users";
 
@@ -128,10 +151,20 @@ export function DashboardPage({ onLogout }: Props) {
     return load();
   }, [load, reloadKey, tab]);
 
-  function applyPreset(days: number | null) {
+  function applyPreset(preset: DatePreset) {
+    if (preset.kind === "today") {
+      const ymd = localYmd();
+      setFromInput(ymd);
+      setToInput(ymd);
+      setRange({
+        from: dayBoundsIso(ymd, false),
+        to: dayBoundsIso(ymd, true),
+      });
+      return;
+    }
     setFromInput("");
     setToInput("");
-    setRange(days == null ? {} : { days });
+    setRange(preset.kind === "all" ? {} : { days: preset.days });
   }
 
   function commitCustomDates(from: string, to: string) {
@@ -271,17 +304,18 @@ export function DashboardPage({ onLogout }: Props) {
               <div className="filter-row" role="group" aria-label="Range presets">
                 {PRESETS.map((p) => {
                   const active =
-                    !range.from &&
-                    (p.days == null
-                      ? activePresetDays == null
-                      : activePresetDays === p.days);
+                    p.kind === "today"
+                      ? todayActive
+                      : p.kind === "all"
+                        ? !range.from && activePresetDays == null
+                        : !range.from && activePresetDays === p.days;
                   return (
                     <button
                       key={p.label}
                       type="button"
                       aria-pressed={active}
                       className={active ? "is-active" : undefined}
-                      onClick={() => applyPreset(p.days)}
+                      onClick={() => applyPreset(p)}
                     >
                       {p.label}
                     </button>
