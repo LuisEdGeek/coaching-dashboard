@@ -25,12 +25,14 @@ type Props = {
 type LoadState = "loading" | "ready" | "error";
 type Tab = "kpis" | "beta" | "rag" | "flagged" | "users";
 type DatePreset =
-  | { label: "Today"; kind: "today" }
+  | { label: "Since Oct 26"; kind: "since_start" }
   | { label: "All"; kind: "all" }
   | { label: string; kind: "days"; days: number };
 
+const TRACKING_START_YMD = "2026-10-26";
+
 const PRESETS: ReadonlyArray<DatePreset> = [
-  { label: "Today", kind: "today" },
+  { label: "Since Oct 26", kind: "since_start" },
   { label: "All", kind: "all" },
   { label: "7d", kind: "days", days: 7 },
   { label: "14d", kind: "days", days: 14 },
@@ -56,11 +58,10 @@ function dayBoundsIso(dateInput: string, endOfDay: boolean): string {
   return dt.toISOString();
 }
 
-function todayRange(): DateRangeQuery {
-  const ymd = localYmd();
+function trackingRange(): DateRangeQuery {
   return {
-    from: dayBoundsIso(ymd, false),
-    to: dayBoundsIso(ymd, true),
+    from: dayBoundsIso(TRACKING_START_YMD, false),
+    to: dayBoundsIso(localYmd(), true),
   };
 }
 
@@ -74,13 +75,13 @@ export function DashboardPage({ onLogout }: Props) {
     }
     return "kpis";
   });
-  const [fromInput, setFromInput] = useState(() => localYmd());
+  const [fromInput, setFromInput] = useState(TRACKING_START_YMD);
   const [toInput, setToInput] = useState(() => localYmd());
   /**
-   * Committed range. Default is the local calendar day (Today).
+   * Committed range. Default tracks from October 26, 2026 through today.
    * Empty = whole Beta for funnel/progression; overview still defaults to 7d.
    */
-  const [range, setRange] = useState<DateRangeQuery>(() => todayRange());
+  const [range, setRange] = useState<DateRangeQuery>(() => trackingRange());
   const [snap, setSnap] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadState, setLoadState] = useState<LoadState>("loading");
@@ -95,7 +96,9 @@ export function DashboardPage({ onLogout }: Props) {
 
   const activePresetDays = range.days ?? null;
   const todayYmd = localYmd();
-  const todayActive = Boolean(range.from && fromInput === todayYmd && toInput === todayYmd);
+  const trackingActive = Boolean(
+    range.from && fromInput === TRACKING_START_YMD && toInput === todayYmd,
+  );
   const showDateFilters = tab === "kpis" || tab === "beta" || tab === "flagged" || tab === "users";
   const showUserFilters = tab === "kpis" || tab === "flagged" || tab === "users";
 
@@ -152,14 +155,10 @@ export function DashboardPage({ onLogout }: Props) {
   }, [load, reloadKey, tab]);
 
   function applyPreset(preset: DatePreset) {
-    if (preset.kind === "today") {
-      const ymd = localYmd();
-      setFromInput(ymd);
-      setToInput(ymd);
-      setRange({
-        from: dayBoundsIso(ymd, false),
-        to: dayBoundsIso(ymd, true),
-      });
+    if (preset.kind === "since_start") {
+      setFromInput(TRACKING_START_YMD);
+      setToInput(localYmd());
+      setRange(trackingRange());
       return;
     }
     setFromInput("");
@@ -304,8 +303,8 @@ export function DashboardPage({ onLogout }: Props) {
               <div className="filter-row" role="group" aria-label="Range presets">
                 {PRESETS.map((p) => {
                   const active =
-                    p.kind === "today"
-                      ? todayActive
+                    p.kind === "since_start"
+                      ? trackingActive
                       : p.kind === "all"
                         ? !range.from && activePresetDays == null
                         : !range.from && activePresetDays === p.days;
