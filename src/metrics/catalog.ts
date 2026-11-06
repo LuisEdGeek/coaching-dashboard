@@ -437,11 +437,11 @@ export const P0_METRICS: MetricDefinition[] = [
     priority: "high",
     kind: "quantitative",
     question: "How do people talk to the coach?",
-    formula: "user messages by input_channel + ai_usage_logs cost by channel",
+    formula: "user turns by input_channel, each as % of those turns, plus AI spend by channel",
     source: "LLM test_messages + ai_usage_logs",
     status: "live",
     howItWorks:
-      "Each user turn is tagged voice or text. The card counts those turns and the AI spend tagged the same way in the selected range. Test accounts are out.",
+      "Each user turn is tagged voice or text. The card shows how many turns, what share of those turns that is, and the AI spend tagged the same way. One session can mix both, so the % is of turns, not of sessions. Test accounts are out.",
   },
   {
     id: "emails_sent",
