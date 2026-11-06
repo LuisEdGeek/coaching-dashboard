@@ -362,6 +362,19 @@ export const P0_METRICS: MetricDefinition[] = [
       "Each finished registration counts as a sign-up. This card is how many new accounts arrived in the period.",
   },
   {
+    id: "registered_users",
+    name: "Registered Users by Platform",
+    category: "Activation",
+    priority: "high",
+    kind: "quantitative",
+    question: "Are people joining from iPhone or Android?",
+    formula: "registered real users in range, split by most recent device (push token or crash report)",
+    source: "user + fcm_device_token + app_crash_report",
+    status: "live",
+    howItWorks:
+      "Counts accounts created in the selected range (test accounts out). Each person is counted once, using the most recent phone the app reported for them: when they sign in and register for push notifications, or when the app reports a crash. Unknown means we have no device signal yet: they never verified or signed in, didn't enable notifications (or signed out), and never had a crash.",
+  },
+  {
     id: "verification_success",
     name: "Account Verification Success",
     category: "Activation",

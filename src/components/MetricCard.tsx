@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HorizontalBarChart } from "./HorizontalBarChart";
 import { LineChart } from "./LineChart";
 import type { DataStatus, MetricDefinition, MetricValue } from "../metrics/types";
 
@@ -21,6 +22,7 @@ export function MetricCard({ metric, value, loading = false }: Props) {
   const isUnavailable = !loading && (available === false || (!value && !loading));
   const isLive = !loading && available === true;
   const hasSeries = Boolean(value?.series && value.series.length > 0);
+  const hasBreakdown = Boolean(value?.breakdown && value.breakdown.length > 0);
   const canExpand = !loading;
 
   const display = loading
@@ -92,7 +94,17 @@ export function MetricCard({ metric, value, loading = false }: Props) {
       {open ? (
         <div className="metric-card__chart">
           <p className="metric-card__how">{metric.howItWorks}</p>
-          {hasSeries && value?.series ? (
+          {hasBreakdown && value?.breakdown ? (
+            <HorizontalBarChart
+              ariaLabel={`${metric.name} breakdown`}
+              rows={value.breakdown.map((b) => ({
+                key: b.key,
+                label: b.label,
+                count: b.count,
+                detail: b.pct,
+              }))}
+            />
+          ) : hasSeries && value?.series ? (
             <LineChart series={value.series} />
           ) : (
             <p className="chart-empty">

@@ -40,6 +40,8 @@ export type MetricValue = {
   alert?: boolean;
   available?: boolean;
   series?: Array<{ t: string; v: number }>;
+  /** Optional split (e.g. iOS / Android / Unknown) shown as bars in the detail. */
+  breakdown?: Array<{ key: string; label: string; count: number; pct: string }>;
 };
 
 export type MetricsSnapshot = {
